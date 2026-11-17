@@ -1,0 +1,343 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+ C00000000000000000000001 /* TrainingSounds in Resources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000002 /* TrainingSounds */; };
+ B00000000000000000000007 /* Widget Chinese Font */ = {isa = PBXBuildFile; fileRef = A00000000000000000000031; };
+ B00000000000000000000008 /* Widget Orbitron Font */ = {isa = PBXBuildFile; fileRef = A00000000000000000000030; };
+ B00000000000000000000001 /* Shared in App */ = {isa = PBXBuildFile; fileRef = B00000000000000000000010; };
+ B00000000000000000000002 /* Bridge in App */ = {isa = PBXBuildFile; fileRef = B00000000000000000000011; };
+ B00000000000000000000003 /* Shared in Widget */ = {isa = PBXBuildFile; fileRef = B00000000000000000000010; };
+ B00000000000000000000004 /* Widget in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000012; };
+ B00000000000000000000005 /* Widget Assets */ = {isa = PBXBuildFile; fileRef = B00000000000000000000013; };
+ B00000000000000000000006 /* Embed Widget */ = {isa = PBXBuildFile; fileRef = B00000000000000000000014; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+        A000000000000000000000A1 /* TrainingVideos in Resources */ = {isa = PBXBuildFile; fileRef = A000000000000000000000A0 /* TrainingVideos */; };
+        A00000000000000000000049 /* TrainingVictoryAlternate.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000048 /* TrainingVictoryAlternate.mp4 */; };
+        A00000000000000000000091 /* OuterLandscapeMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000090 /* OuterLandscapeMenu.swift */; };
+        A00000000000000000000047 /* TrainingDashboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000046 /* TrainingDashboard.swift */; };
+        A00000000000000000000045 /* TrainingAdvice.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000044 /* TrainingAdvice.swift */; };
+        A00000000000000000000043 /* TrainingEnergy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000042 /* TrainingEnergy.swift */; };
+        A00000000000000000000040 /* BaoCanMouHuiTing-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000003E /* BaoCanMouHuiTing-Regular.ttf */; };
+        A00000000000000000000041 /* BaoCanMou-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000003F /* BaoCanMou-OFL.txt */; };
+		A0000000000000000000003D /* TrainingInsights.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000003C /* TrainingInsights.swift */; };
+		A0000000000000000000003B /* TrainingVictory.mov in Resources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000003A /* TrainingVictory.mov */; };
+		A00000000000000000000039 /* ArcadeMaterials.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000038 /* ArcadeMaterials.swift */; };
+		A00000000000000000000034 /* Orbitron.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000030 /* Orbitron.ttf */; };
+		A00000000000000000000035 /* ZCOOLQingKeHuangYou-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000031 /* ZCOOLQingKeHuangYou-Regular.ttf */; };
+		A00000000000000000000036 /* Orbitron-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000032 /* Orbitron-OFL.txt */; };
+		A00000000000000000000037 /* ZCOOL-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000033 /* ZCOOL-OFL.txt */; };
+		A00000000000000000000025 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000024 /* Assets.xcassets */; };
+		A0000000000000000000000B /* BarbellTrainingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000008 /* BarbellTrainingApp.swift */; };
+		A0000000000000000000000C /* TrainingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000009 /* TrainingStore.swift */; };
+		A0000000000000000000000D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000A /* ContentView.swift */; };
+		A00000000000000000000022 /* TrainingEditors.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000020 /* TrainingEditors.swift */; };
+		A00000000000000000000023 /* TrainingExtras.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000021 /* TrainingExtras.swift */; };
+		A00000000000000000000027 /* TrainingTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000026 /* TrainingTools.swift */; };
+		A00000000000000000000029 /* TrainingTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000028 /* TrainingTheme.swift */; };
+		A0000000000000000000002B /* FoldedTrainingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000002A /* FoldedTrainingView.swift */; };
+		A0000000000000000000002D /* FoldedTrainingDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000002C /* FoldedTrainingDisplay.swift */; };
+		A0000000000000000000002F /* FoldedTrainingHUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000002E /* FoldedTrainingHUD.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+ C00000000000000000000002 /* TrainingSounds */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TrainingSounds; sourceTree = "<group>"; };
+ B00000000000000000000010 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarbellTraining/TrainingWidgetShared.swift; sourceTree = "<group>"; };
+ B00000000000000000000011 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarbellTraining/TrainingWidgetBridge.swift; sourceTree = "<group>"; };
+ B00000000000000000000012 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarbellWidget/TrainingWidget.swift; sourceTree = "<group>"; };
+ B00000000000000000000013 = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = BarbellWidget/Assets.xcassets; sourceTree = "<group>"; };
+ B00000000000000000000014 = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; path = BarbellWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+        A000000000000000000000A0 /* TrainingVideos */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TrainingVideos; sourceTree = "<group>"; };
+        A00000000000000000000048 /* TrainingVictoryAlternate.mp4 */ = {isa = PBXFileReference; lastKnownFileType = video.mp4; path = TrainingVictoryAlternate.mp4; sourceTree = "<group>"; };
+        A00000000000000000000090 /* OuterLandscapeMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OuterLandscapeMenu.swift; sourceTree = "<group>"; };
+        A00000000000000000000046 /* TrainingDashboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingDashboard.swift; sourceTree = "<group>"; };
+        A00000000000000000000044 /* TrainingAdvice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingAdvice.swift; sourceTree = "<group>"; };
+        A00000000000000000000042 /* TrainingEnergy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingEnergy.swift; sourceTree = "<group>"; };
+        A0000000000000000000003E /* BaoCanMouHuiTing-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "BaoCanMouHuiTing-Regular.ttf"; sourceTree = "<group>"; };
+        A0000000000000000000003F /* BaoCanMou-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "BaoCanMou-OFL.txt"; sourceTree = "<group>"; };
+		A0000000000000000000003C /* TrainingInsights.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingInsights.swift; sourceTree = "<group>"; };
+		A0000000000000000000003A /* TrainingVictory.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = TrainingVictory.mov; sourceTree = "<group>"; };
+		A00000000000000000000038 /* ArcadeMaterials.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArcadeMaterials.swift; sourceTree = "<group>"; };
+		A00000000000000000000030 /* Orbitron.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Orbitron.ttf; sourceTree = "<group>"; };
+		A00000000000000000000031 /* ZCOOLQingKeHuangYou-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = ZCOOLQingKeHuangYou-Regular.ttf; sourceTree = "<group>"; };
+		A00000000000000000000032 /* Orbitron-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Orbitron-OFL.txt"; sourceTree = "<group>"; };
+		A00000000000000000000033 /* ZCOOL-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "ZCOOL-OFL.txt"; sourceTree = "<group>"; };
+		A00000000000000000000024 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A00000000000000000000007 /* BarbellTraining.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = BarbellTraining.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A00000000000000000000008 /* BarbellTrainingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarbellTrainingApp.swift; sourceTree = "<group>"; };
+		A00000000000000000000009 /* TrainingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingStore.swift; sourceTree = "<group>"; };
+		A0000000000000000000000A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A00000000000000000000020 /* TrainingEditors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingEditors.swift; sourceTree = "<group>"; };
+		A00000000000000000000021 /* TrainingExtras.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingExtras.swift; sourceTree = "<group>"; };
+		A00000000000000000000026 /* TrainingTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingTools.swift; sourceTree = "<group>"; };
+		A00000000000000000000028 /* TrainingTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingTheme.swift; sourceTree = "<group>"; };
+		A0000000000000000000002A /* FoldedTrainingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoldedTrainingView.swift; sourceTree = "<group>"; };
+		A0000000000000000000002C /* FoldedTrainingDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoldedTrainingDisplay.swift; sourceTree = "<group>"; };
+		A0000000000000000000002E /* FoldedTrainingHUD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoldedTrainingHUD.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXContainerItemProxy section */
+ B00000000000000000000020 = {isa = PBXContainerItemProxy; containerPortal = A00000000000000000000001; proxyType = 1; remoteGlobalIDString = B00000000000000000000030; remoteInfo = BarbellWidget; };
+/* End PBXContainerItemProxy section */
+/* Begin PBXTargetDependency section */
+ B00000000000000000000021 = {isa = PBXTargetDependency; target = B00000000000000000000030; targetProxy = B00000000000000000000020; };
+/* End PBXTargetDependency section */
+/* Begin PBXCopyFilesBuildPhase section */
+ B00000000000000000000022 = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147483647; dstPath = ""; dstSubfolderSpec = 13; files = (B00000000000000000000006, ); name = "Embed App Extensions"; runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXCopyFilesBuildPhase section */
+/* Begin PBXFrameworksBuildPhase section */
+		A00000000000000000000010 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A00000000000000000000003 = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000006 /* BarbellTraining */,
+ B00000000000000000000010, B00000000000000000000011, B00000000000000000000012, B00000000000000000000013,
+				A00000000000000000000004 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A00000000000000000000004 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000007 /* BarbellTraining.app */, B00000000000000000000014,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000006 /* BarbellTraining */ = {
+			isa = PBXGroup;
+			children = (
+				A0000000000000000000003A /* TrainingVictory.mov */,
+                A00000000000000000000048 /* TrainingVictoryAlternate.mp4 */,
+                A000000000000000000000A0 /* TrainingVideos */,
+                C00000000000000000000002 /* TrainingSounds */,
+				A0000000000000000000003E /* BaoCanMouHuiTing-Regular.ttf */,
+                A0000000000000000000003F /* BaoCanMou-OFL.txt */,
+				A00000000000000000000030 /* Orbitron.ttf */,
+				A00000000000000000000031 /* ZCOOLQingKeHuangYou-Regular.ttf */,
+				A00000000000000000000032 /* Orbitron-OFL.txt */,
+				A00000000000000000000033 /* ZCOOL-OFL.txt */,
+				A00000000000000000000008 /* BarbellTrainingApp.swift */,
+				A00000000000000000000009 /* TrainingStore.swift */,
+				A0000000000000000000003C /* TrainingInsights.swift */,
+                A00000000000000000000042 /* TrainingEnergy.swift */,
+                A00000000000000000000044 /* TrainingAdvice.swift */,
+                A00000000000000000000046 /* TrainingDashboard.swift */,
+                A00000000000000000000090 /* OuterLandscapeMenu.swift */,
+				A0000000000000000000000A /* ContentView.swift */,
+				A00000000000000000000020 /* TrainingEditors.swift */,
+				A00000000000000000000021 /* TrainingExtras.swift */,
+				A00000000000000000000026 /* TrainingTools.swift */,
+				A00000000000000000000028 /* TrainingTheme.swift */,
+				A0000000000000000000002A /* FoldedTrainingView.swift */,
+				A00000000000000000000038 /* ArcadeMaterials.swift */,
+				A0000000000000000000002C /* FoldedTrainingDisplay.swift */,
+				A0000000000000000000002E /* FoldedTrainingHUD.swift */,
+				A00000000000000000000024 /* Assets.xcassets */,
+			);
+			path = BarbellTraining;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+ B00000000000000000000030 = {isa = PBXNativeTarget; buildConfigurationList = B00000000000000000000035; buildPhases = (B00000000000000000000031, B00000000000000000000032, ); buildRules = (); dependencies = (); name = BarbellWidget; productName = BarbellWidget; productReference = B00000000000000000000014; productType = "com.apple.product-type.app-extension"; };
+		A00000000000000000000005 /* BarbellTraining */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A0000000000000000000000E /* Build configuration list for PBXNativeTarget "BarbellTraining" */;
+			buildPhases = (
+				A0000000000000000000000F /* Sources */,
+				A00000000000000000000010 /* Frameworks */,
+				A00000000000000000000011 /* Resources */,
+ B00000000000000000000022,
+			);
+			buildRules = (
+			);
+			dependencies = (B00000000000000000000021,
+			);
+			name = BarbellTraining;
+			productName = BarbellTraining;
+			productReference = A00000000000000000000007 /* BarbellTraining.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A00000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1500;
+			};
+			buildConfigurationList = A00000000000000000000002 /* Build configuration list for PBXProject "BarbellTraining" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = "zh-Hans";
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				"zh-Hans",
+				en,
+				Base,
+			);
+			mainGroup = A00000000000000000000003;
+			productRefGroup = A00000000000000000000004 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A00000000000000000000005 /* BarbellTraining */, B00000000000000000000030,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+ B00000000000000000000032 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000005, B00000000000000000000007, B00000000000000000000008, ); runOnlyForDeploymentPostprocessing = 0; };
+		A00000000000000000000011 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A0000000000000000000003B /* TrainingVictory.mov in Resources */,
+                A00000000000000000000049 /* TrainingVictoryAlternate.mp4 in Resources */,
+                A000000000000000000000A1 /* TrainingVideos in Resources */,
+                C00000000000000000000001 /* TrainingSounds in Resources */,
+				A00000000000000000000040 /* BaoCanMouHuiTing-Regular.ttf in Resources */,
+                A00000000000000000000041 /* BaoCanMou-OFL.txt in Resources */,
+				A00000000000000000000034 /* Orbitron.ttf in Resources */,
+				A00000000000000000000035 /* ZCOOLQingKeHuangYou-Regular.ttf in Resources */,
+				A00000000000000000000036 /* Orbitron-OFL.txt in Resources */,
+				A00000000000000000000037 /* ZCOOL-OFL.txt in Resources */,
+				A00000000000000000000025 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+ B00000000000000000000031 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000003, B00000000000000000000004, ); runOnlyForDeploymentPostprocessing = 0; };
+		A0000000000000000000000F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A0000000000000000000000B /* BarbellTrainingApp.swift in Sources */,
+ B00000000000000000000001, B00000000000000000000002,
+				A0000000000000000000000C /* TrainingStore.swift in Sources */,
+				A0000000000000000000003D /* TrainingInsights.swift in Sources */,
+                A00000000000000000000043 /* TrainingEnergy.swift in Sources */,
+                A00000000000000000000045 /* TrainingAdvice.swift in Sources */,
+                A00000000000000000000047 /* TrainingDashboard.swift in Sources */,
+                A00000000000000000000091 /* OuterLandscapeMenu.swift in Sources */,
+				A0000000000000000000000D /* ContentView.swift in Sources */,
+				A00000000000000000000022 /* TrainingEditors.swift in Sources */,
+				A00000000000000000000023 /* TrainingExtras.swift in Sources */,
+				A00000000000000000000027 /* TrainingTools.swift in Sources */,
+				A00000000000000000000029 /* TrainingTheme.swift in Sources */,
+				A0000000000000000000002B /* FoldedTrainingView.swift in Sources */,
+				A00000000000000000000039 /* ArcadeMaterials.swift in Sources */,
+				A0000000000000000000002D /* FoldedTrainingDisplay.swift in Sources */,
+				A0000000000000000000002F /* FoldedTrainingHUD.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+ B00000000000000000000033 = {isa = XCBuildConfiguration; buildSettings = {CURRENT_PROJECT_VERSION = 1; MARKETING_VERSION = 1.0; APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_ENTITLEMENTS = BarbellWidget/BarbellWidget.entitlements; CODE_SIGN_STYLE = Automatic; DEVELOPMENT_TEAM = GVJ472KU3R; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_FILE = BarbellWidget/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; PRODUCT_BUNDLE_IDENTIFIER = com.personal.barbelltraining.statuswidget20261114; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; }; name = Debug; };
+ B00000000000000000000034 = {isa = XCBuildConfiguration; buildSettings = {CURRENT_PROJECT_VERSION = 1; MARKETING_VERSION = 1.0; APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_ENTITLEMENTS = BarbellWidget/BarbellWidget.entitlements; CODE_SIGN_STYLE = Automatic; DEVELOPMENT_TEAM = GVJ472KU3R; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_FILE = BarbellWidget/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; PRODUCT_BUNDLE_IDENTIFIER = com.personal.barbelltraining.statuswidget20261114; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; }; name = Release; };
+		A00000000000000000000012 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		A00000000000000000000013 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				SDKROOT = iphoneos;
+			};
+			name = Release;
+		};
+		A00000000000000000000014 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CURRENT_PROJECT_VERSION = 1;
+                MARKETING_VERSION = 1.0;
+                ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = GVJ472KU3R;
+				GENERATE_INFOPLIST_FILE = YES;
+                INFOPLIST_FILE = BarbellTraining/Info.plist;
+                INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+                CODE_SIGN_ENTITLEMENTS = BarbellTraining/BarbellTraining.entitlements;
+                INFOPLIST_KEY_NSHealthShareUsageDescription = "读取力量训练的活动能量，用于显示本次训练的消耗。";
+				INFOPLIST_KEY_CFBundleDisplayName = "朱律";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.personal.barbelltraining;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		A00000000000000000000015 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CURRENT_PROJECT_VERSION = 1;
+                MARKETING_VERSION = 1.0;
+                ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = GVJ472KU3R;
+				GENERATE_INFOPLIST_FILE = YES;
+                INFOPLIST_FILE = BarbellTraining/Info.plist;
+                INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+                CODE_SIGN_ENTITLEMENTS = BarbellTraining/BarbellTraining.entitlements;
+                INFOPLIST_KEY_NSHealthShareUsageDescription = "读取力量训练的活动能量，用于显示本次训练的消耗。";
+				INFOPLIST_KEY_CFBundleDisplayName = "朱律";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.personal.barbelltraining;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+ B00000000000000000000035 = {isa = XCConfigurationList; buildConfigurations = (B00000000000000000000033, B00000000000000000000034, ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		A00000000000000000000002 /* Build configuration list for PBXProject "BarbellTraining" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00000000000000000000012 /* Debug */,
+				A00000000000000000000013 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A0000000000000000000000E /* Build configuration list for PBXNativeTarget "BarbellTraining" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00000000000000000000014 /* Debug */,
+				A00000000000000000000015 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A00000000000000000000001 /* Project object */;
+}
