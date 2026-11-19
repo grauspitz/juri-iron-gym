@@ -3,11 +3,15 @@ import AVFoundation
 
 struct FoldedTrainingDisplay: View {
     @EnvironmentObject private var store: TrainingStore
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let reps: Int
     @Binding var note: String
     let remainingSeconds: Int?
     let totalDuration: Int
     let isPaused: Bool
+    let showEntireScene: Bool
+    let sceneVisible: Bool
+    let hudVisible: Bool
 
     private let imageRatio: CGFloat = 1491.0 / 1055.0
 
@@ -15,7 +19,13 @@ struct FoldedTrainingDisplay: View {
         (remainingSeconds ?? 0) > 0
     }
 
-    private var scene: FoldedScene {
+    private var scene: FoldedScene { Self.scene(for: note) }
+
+    static func backgroundImageName(note: String, isResting: Bool) -> String {
+        isResting ? "FoldedRestBurnoutSoft" : scene(for: note).imageName
+    }
+
+    private static func scene(for note: String) -> FoldedScene {
         switch note.trimmingCharacters(in: .whitespacesAndNewlines) {
         case "深蹲": return .squat
         case "卧推": return .benchPress
@@ -28,33 +38,39 @@ struct FoldedTrainingDisplay: View {
     var body: some View {
         GeometryReader { geometry in
             let viewport = geometry.size
-            let width = max(viewport.width, viewport.height * imageRatio) * scene.zoom
+            let width = showEntireScene ? min(viewport.width, viewport.height * imageRatio) : max(viewport.width, viewport.height * imageRatio) * scene.zoom
             let height = width / imageRatio
             let xOffset = (viewport.width - width) / 2
             let targetY = viewport.height * scene.visibleBarPosition
-            let yOffset = min(0, max(viewport.height - height, targetY - height * scene.barY))
+            let yOffset = showEntireScene ? (viewport.height - height) / 2 : min(0, max(viewport.height - height, targetY - height * scene.barY))
             ZStack(alignment: .topLeading) {
                 if isResting {
                     ZStack {
-                        Image("FoldedRestBurnoutSoft").resizable().scaledToFill()
-                        TrainingLoopVideo(name: "rest")
+                        Image("FoldedRestBurnoutSoft").resizable().aspectRatio(contentMode: showEntireScene ? .fit : .fill)
+                        TrainingLoopVideo(name: "rest", aspectFit: showEntireScene)
                     }
                     .frame(width: viewport.width, height: viewport.height)
                     .clipped()
+                    .opacity(sceneVisible ? 1 : 0)
+                    .animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: sceneVisible)
                 } else {
                     ZStack {
                         Image(scene.imageName).resizable()
-                        TrainingLoopVideo(name: scene.videoName)
+                        TrainingLoopVideo(name: scene.videoName, aspectFit: showEntireScene)
                         plateOverlay(size: CGSize(width: width, height: height))
                     }
                     .frame(width: width, height: height)
                     .offset(x: xOffset, y: yOffset)
+                    .opacity(sceneVisible ? 1 : 0)
+                    .animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: sceneVisible)
                 }
 
                 FoldedTrainingHUD(note: $note, reps: reps, totalWeight: store.total, barWeight: store.barWeight,
                                   todayCount: todayCount, remainingSeconds: remainingSeconds,
                                   totalDuration: totalDuration, isPaused: isPaused, informationY: scene.cardY)
                     .frame(width: viewport.width, height: viewport.height)
+                    .opacity(hudVisible ? 1 : 0)
+                    .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: hudVisible)
                 if store.celebrationID != nil {
                     TrainingVictoryOverlay()
                         .frame(width: viewport.width, height: viewport.height)
@@ -64,6 +80,7 @@ struct FoldedTrainingDisplay: View {
                 }
                 if !isResting {
                 Text(plateDescription)
+                    .opacity(hudVisible ? 1 : 0)
                     .font(.custom("ZCOOLQingKeHuangYou-Regular", size: max(9, viewport.width * 0.016)))
                     .foregroundStyle(.white)
                     .lineLimit(2).minimumScaleFactor(0.7)
@@ -318,17 +335,20 @@ struct TrainingLoopVideo: UIViewRepresentable {
     let name: String
     var fileExtension = "mp4"
     var isVisible = true
+    var aspectFit = false
     @Environment(\.scenePhase) private var scenePhase
 
     func makeUIView(context: Context) -> TrainingLoopPlayerView {
         let view = TrainingLoopPlayerView()
         view.configure(name: name, fileExtension: fileExtension)
+        view.setAspectFit(aspectFit)
         view.setPlaying(scenePhase == .active && isVisible)
         return view
     }
 
     func updateUIView(_ view: TrainingLoopPlayerView, context: Context) {
         view.configure(name: name, fileExtension: fileExtension)
+        view.setAspectFit(aspectFit)
         view.setPlaying(scenePhase == .active && isVisible)
     }
 
@@ -364,6 +384,10 @@ final class TrainingLoopPlayerView: UIView {
         player = queue
         looper = AVPlayerLooper(player: queue, templateItem: AVPlayerItem(url: url))
         playerLayer.player = queue
+    }
+
+    func setAspectFit(_ enabled: Bool) {
+        playerLayer.videoGravity = enabled ? .resizeAspect : .resizeAspectFill
     }
 
     func setPlaying(_ playing: Bool) {

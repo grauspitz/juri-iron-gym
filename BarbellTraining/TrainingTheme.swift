@@ -20,7 +20,7 @@ enum TrainingTheme {
 }
 
 struct CyberGymTitle: View {
-    private let title = "蛛莉铁馆"
+    var title = "蛛莉铁馆"
 
     var body: some View {
         HStack(spacing: 7) {

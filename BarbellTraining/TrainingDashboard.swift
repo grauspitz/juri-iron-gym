@@ -5,9 +5,11 @@ struct TrainingDashboard: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    @State private var calendarDate = Date()
+    @Binding var calendarDate: Date
+    @Binding var trainingModeAnchor: CGRect?
     @State private var calendarVisible = false
     @State private var showAdvice = false
+    @State private var selectedCompactTab = 0
     var compactMenuEnabled = true
     let overviewContent: AnyView
     let statisticsContent: AnyView
@@ -31,12 +33,16 @@ struct TrainingDashboard: View {
     let showCalculator: () -> Void
     let showOverview: () -> Void
     let showTools: () -> Void
+    let enterTrainingMode: () -> Void
 
-    init(compactMenuEnabled: Bool = true, overviewContent: AnyView, statisticsContent: AnyView, adviceContent: AnyView, selectedInnerTab: Binding<Int>, toolsContent: AnyView, innerToolsContent: AnyView, maintenanceContent: AnyView, reps: Binding<Int>, note: Binding<String>, deadline: Binding<Date?>,
+    init(compactMenuEnabled: Bool = true, calendarDate: Binding<Date>, trainingModeAnchor: Binding<CGRect?>, overviewContent: AnyView, statisticsContent: AnyView, adviceContent: AnyView, selectedInnerTab: Binding<Int>, toolsContent: AnyView, innerToolsContent: AnyView, maintenanceContent: AnyView, reps: Binding<Int>, note: Binding<String>, deadline: Binding<Date?>,
          duration: Binding<Int>, pausedSeconds: Binding<Int?>, record: @escaping () -> Void,
          reuse: @escaping () -> Void, showCalculator: @escaping () -> Void,
-         showOverview: @escaping () -> Void, showTools: @escaping () -> Void) {
+         showOverview: @escaping () -> Void, showTools: @escaping () -> Void,
+         enterTrainingMode: @escaping () -> Void) {
         self.compactMenuEnabled = compactMenuEnabled
+        self._calendarDate = calendarDate
+        self._trainingModeAnchor = trainingModeAnchor
         self.overviewContent = overviewContent
         self.statisticsContent = statisticsContent
         self.adviceContent = adviceContent
@@ -54,6 +60,7 @@ struct TrainingDashboard: View {
         self.showCalculator = showCalculator
         self.showOverview = showOverview
         self.showTools = showTools
+        self.enterTrainingMode = enterTrainingMode
     }
 
     var body: some View {
@@ -75,7 +82,7 @@ struct TrainingDashboard: View {
             let scale = min(geometry.size.width / 1280, geometry.size.height / 720)
             let daySets = store.sets.filter { Calendar.current.isDate($0.date, inSameDayAs: calendarDate) }
             let volume = daySets.reduce(0) { $0 + $1.weight * Double($1.reps) }
-            if scale < 0.61 || dynamicTypeSize.isAccessibilitySize {
+            if dynamicTypeSize.isAccessibilitySize {
                 ScrollView { calendarCard.padding(12) }
                     .background(TrainingBackground())
             } else {
@@ -107,35 +114,49 @@ struct TrainingDashboard: View {
             }
         }
         .background(Color.black)
-        .onAppear { calendarVisible = true }
+        .onAppear { calendarVisible = true; trainingModeAnchor = nil }
         .onDisappear { calendarVisible = false }
         .toolbar(.hidden, for: .navigationBar)
     }
 
     private var compactTabs: some View {
-        TabView {
-            dashboardContent().background(TrainingBackground()).tabItem { Label("首页", systemImage: "house") }
-            compactPage { expandedPlanCard; recordCard; restCard }.background(TrainingBackground()).tabItem { Label("训练", systemImage: "figure.strengthtraining.traditional") }
-            compactPage { calendarCard }.background(TrainingBackground()).tabItem { Label("日历", systemImage: "calendar") }
-            overviewContent.tabItem { Label("概览", systemImage: "chart.bar.fill") }
-            toolsContent.tabItem { Label("工具", systemImage: "slider.horizontal.3") }
+        TabView(selection: Binding(get: { selectedCompactTab }, set: { tab in
+            if tab == 5 { enterTrainingMode() } else { selectedCompactTab = tab }
+        })) {
+            dashboardContent().background(TrainingBackground()).tabItem { Label("首页", systemImage: "house") }.tag(0)
+            compactPage { expandedPlanCard; recordCard; restCard }.background(TrainingBackground()).tabItem { Label("训练", systemImage: "figure.strengthtraining.traditional") }.tag(1)
+            compactPage { calendarCard }.background(TrainingBackground()).tabItem { Label("日历", systemImage: "calendar") }.tag(2)
+            overviewContent.tabItem { Label("概览", systemImage: "chart.bar.fill") }.tag(3)
+            toolsContent.tabItem { Label("工具", systemImage: "slider.horizontal.3") }.tag(4)
+            Color.clear.tabItem { trainingModeLabel }.tag(5)
         }
+        .background(TrainingModeTabProbe(anchor: $trainingModeAnchor))
         .tint(TrainingTheme.teal)
     }
 
     // iPhone Duo 内屏优先：保留系统 Dock，使用 size class 与可用空间适配。
     private var innerTabs: some View {
-        TabView(selection: $selectedInnerTab) {
+        TabView(selection: Binding(get: { selectedInnerTab }, set: { tab in
+            if tab == 4 { enterTrainingMode() } else { selectedInnerTab = tab }
+        })) {
             innerDashboard.background(TrainingBackground())
                 .tabItem { Label("训练", systemImage: "figure.strengthtraining.traditional") }.tag(0)
             InnerCalendarPage(selectedDate: $calendarDate).background(TrainingBackground())
                 .tabItem { Label("日历", systemImage: "calendar") }.tag(1)
             innerToolsContent.tabItem { Label("工具", systemImage: "slider.horizontal.3") }.tag(2)
             maintenanceContent.tabItem { Label("备份与配置", systemImage: "externaldrive.badge.checkmark") }.tag(3)
+            Color.clear.tabItem { trainingModeLabel }.tag(4)
         }
+        .background(TrainingModeTabProbe(anchor: $trainingModeAnchor))
         .tint(TrainingTheme.teal)
         .sheet(isPresented: $showAdvice) {
             adviceContent
+        }
+    }
+
+    private var trainingModeLabel: some View {
+        Label { Text("训练模式") } icon: {
+            Image("TrainingModeAvatar").renderingMode(.original)
         }
     }
 

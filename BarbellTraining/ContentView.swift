@@ -4,6 +4,7 @@ import UIKit
 struct ContentView: View {
     @EnvironmentObject private var store: TrainingStore
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @StateObject private var advice = TrainingAdvice()
@@ -23,7 +24,20 @@ struct ContentView: View {
     @State private var restTotalDuration = 90
     @State private var pausedRestSeconds: Int?
     @State private var showFullLayout = false
+    @State private var calendarDate = Date()
+    @State private var trainingModeAnchor: CGRect?
+    @State private var selectedFoldedPlateID: UUID?
+    @State private var showFoldedWeightCalculator = false
+    @State private var pendingFoldedWeightSelection: [UUID: Int]?
+    @State private var showFoldedCustomActionEditor = false
+    @State private var foldedCustomActionDraft = ""
     @State private var isHorizontalFolded = false
+    @State private var isTrainingMode = false
+    @State private var trainingModeManuallyOpened = false
+    @State private var hasStartedTrainingMode = false
+    @State private var fullTrainingStartup = false
+    @State private var isTrainingModeExiting = false
+    @State private var trainingExitTask: Task<Void, Never>?
     @State private var showAdd = false
     @State private var showHistory = false
     @State private var showOverview = false
@@ -39,43 +53,60 @@ struct ContentView: View {
     @State private var pendingTodayDelete: [UUID] = []
     @State private var showTodayDeleteConfirmation = false
     @AppStorage("plateSortAscending") private var plateSortAscending = false
+    @AppStorage("trainingStartupStyle") private var trainingStartupStyle = "automatic"
+    @AppStorage("trainingStartupSound") private var trainingStartupSound = true
 
     private var isOuterCalendar: Bool {
-        !isHorizontalFolded && horizontalSizeClass == .compact && verticalSizeClass == .compact
+        !isTrainingMode && horizontalSizeClass == .compact && verticalSizeClass == .compact
     }
 
     var body: some View {
         NavigationStack {
+            GeometryReader { safeGeometry in
             GeometryReader { geometry in
                 ZStack {
-                    if horizontalFold(in: geometry) != nil {
+                    if isTrainingMode {
                         Color.black.ignoresSafeArea()
                     } else {
                         TrainingBackground()
                     }
-                if let fold = horizontalFold(in: geometry) {
-                    FoldedTrainingView(fold: fold, height: geometry.size.height, reps: $reps, note: $note, deadline: $restDeadline, pausedSeconds: $pausedRestSeconds, duration: $restDuration, totalDuration: $restTotalDuration, showFullLayout: $showFullLayout, fullLayout: AnyView(foldedFullLayout), record: recordSet, reuse: reusePreviousSet)
-                } else {
-                    dashboard
-
+                Group {
+                    if isTrainingMode {
+                        let fold = horizontalFold(in: geometry) ?? CGRect(x: 0, y: geometry.size.height * 0.45, width: geometry.size.width, height: 0)
+                        let leadingInset = safeGeometry.safeAreaInsets.leading
+                        let trailingInset = safeGeometry.safeAreaInsets.trailing
+                        FoldedTrainingView(fold: fold, height: geometry.size.height, width: geometry.size.width, isLandscape: geometry.size.width > geometry.size.height, leadingInset: leadingInset, trailingInset: trailingInset, bottomInset: safeGeometry.safeAreaInsets.bottom, reps: $reps, note: $note, deadline: $restDeadline, pausedSeconds: $pausedRestSeconds, duration: $restDuration, totalDuration: $restTotalDuration, showFullLayout: $showFullLayout, selectedPlateID: $selectedFoldedPlateID, showWeightCalculator: $showFoldedWeightCalculator, pendingWeightSelection: $pendingFoldedWeightSelection, showCustomActionEditor: $showFoldedCustomActionEditor, customActionDraft: $foldedCustomActionDraft, fullLayout: AnyView(foldedFullLayout), record: recordSet, reuse: reusePreviousSet, exit: exitTrainingMode, fullStartup: fullTrainingStartup, isExiting: isTrainingModeExiting)
+                            .transition(.opacity)
+                    } else {
+                        dashboard.transition(.opacity)
+                    }
                 }
+                .animation(reduceMotion ? nil : .easeInOut(duration: 0.12), value: isTrainingMode)
                 }
                 .onAppear {
                     isHorizontalFolded = horizontalFold(in: geometry) != nil
+                    if isHorizontalFolded { beginTrainingMode(manual: false) }
                 }
                 .onChange(of: horizontalFold(in: geometry) != nil) { folded in
                     isHorizontalFolded = folded
+                    if folded {
+                        if isTrainingModeExiting { trainingExitTask?.cancel(); isTrainingModeExiting = false }
+                        if !isTrainingMode { beginTrainingMode(manual: false) }
+                    } else if !trainingModeManuallyOpened && isTrainingMode {
+                        closeTrainingMode()
+                    }
                     showFullLayout = false
                 }
             }
-            .ignoresSafeArea(.container, edges: isOuterCalendar ? .all : (isHorizontalFolded ? .top : []))
-            .ignoresSafeArea(.keyboard, edges: isHorizontalFolded ? .bottom : [])
-            .toolbar(isHorizontalFolded || isOuterCalendar ? .hidden : .visible, for: .navigationBar)
-            .statusBarHidden(isHorizontalFolded || isOuterCalendar)
+            .ignoresSafeArea(.container, edges: isOuterCalendar || isTrainingMode ? .all : [])
+            .ignoresSafeArea(.keyboard, edges: isTrainingMode ? .bottom : [])
+            }
+            .toolbar(isTrainingMode || isOuterCalendar ? .hidden : .visible, for: .navigationBar)
+            .statusBarHidden(isTrainingMode || isOuterCalendar)
             .navigationTitle("蛛莉铁馆")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                if !isHorizontalFolded && !isOuterCalendar {
+                if !isTrainingMode && !isOuterCalendar {
                     ToolbarItem(placement: .principal) { CyberGymTitle() }
                 }
             }
@@ -201,10 +232,10 @@ struct ContentView: View {
     }
 
     private func dashboard(compactMenuEnabled: Bool) -> some View {
-        TrainingDashboard(compactMenuEnabled: compactMenuEnabled, overviewContent: AnyView(overviewContent), statisticsContent: AnyView(innerStatisticsContent), adviceContent: AnyView(innerAdviceContent), selectedInnerTab: $selectedInnerTab, toolsContent: AnyView(toolsContent()), innerToolsContent: AnyView(toolsContent(includeMaintenance: false)), maintenanceContent: AnyView(maintenanceContent), reps: $reps, note: $note, deadline: $restDeadline, duration: $restDuration,
+        TrainingDashboard(compactMenuEnabled: compactMenuEnabled, calendarDate: $calendarDate, trainingModeAnchor: $trainingModeAnchor, overviewContent: AnyView(overviewContent), statisticsContent: AnyView(innerStatisticsContent), adviceContent: AnyView(innerAdviceContent), selectedInnerTab: $selectedInnerTab, toolsContent: AnyView(toolsContent()), innerToolsContent: AnyView(toolsContent(includeMaintenance: false)), maintenanceContent: AnyView(maintenanceContent), reps: $reps, note: $note, deadline: $restDeadline, duration: $restDuration,
                           pausedSeconds: $pausedRestSeconds, record: recordSet, reuse: reusePreviousSet,
                           showCalculator: { showCalculator = true }, showOverview: { showOverview = true },
-                          showTools: { showTools = true })
+                          showTools: { showTools = true }, enterTrainingMode: enterTrainingMode)
     }
 
     private var foldedFullLayout: some View {
@@ -241,6 +272,7 @@ struct ContentView: View {
                     List {
                         WeightCalculatorSection().listRowBackground(TrainingTheme.card)
                         barSection.listRowBackground(TrainingTheme.card)
+                        trainingAnimationSettings.listRowBackground(TrainingTheme.card)
                         Section {
                             Button { showAdd = true } label: {
                                 TrainingRowLabel(title: "添加杠铃片规格", systemImage: "plus.circle")
@@ -258,6 +290,7 @@ struct ContentView: View {
                     WeightCalculatorSection().listRowBackground(TrainingTheme.card)
                     plateSection().listRowBackground(TrainingTheme.card)
                     barSection.listRowBackground(TrainingTheme.card)
+                    trainingAnimationSettings.listRowBackground(TrainingTheme.card)
                     if includeMaintenance {
                         BackupSection().listRowBackground(TrainingTheme.card)
                         ProvisioningStatusSection().listRowBackground(TrainingTheme.card)
@@ -269,6 +302,17 @@ struct ContentView: View {
         .sheet(isPresented: $showBarSettings) { BarWeightView() }
         .sheet(isPresented: $showAdd) { AddPlateView() }
         .sheet(item: $editingPlate) { plate in AddPlateView(plate: plate) }
+    }
+
+    private var trainingAnimationSettings: some View {
+        Section("训练模式动画") {
+            Picker("启动动画", selection: $trainingStartupStyle) {
+                Text("首次完整，之后快速").tag("automatic")
+                Text("完整启动").tag("full")
+                Text("快速启动").tag("quick")
+            }
+            Toggle("启动音效", isOn: $trainingStartupSound)
+        }
     }
 
     private var maintenanceContent: some View {
@@ -332,6 +376,41 @@ struct ContentView: View {
                 .scrollContentBackground(.hidden).background(TrainingBackground())
                 .navigationTitle("自动配重")
                 .toolbar { ToolbarItem(placement: .confirmationAction) { Button("完成") { showCalculator = false } } }
+        }
+    }
+
+    private func enterTrainingMode() {
+        TrainingFeedback.tap()
+        beginTrainingMode(manual: true)
+    }
+
+    private func beginTrainingMode(manual: Bool) {
+        trainingExitTask?.cancel()
+        isTrainingModeExiting = false
+        trainingModeManuallyOpened = manual
+        fullTrainingStartup = trainingStartupStyle == "full" || (trainingStartupStyle == "automatic" && !hasStartedTrainingMode)
+        hasStartedTrainingMode = true
+        isTrainingMode = true
+    }
+
+    private func exitTrainingMode() {
+        TrainingFeedback.tap()
+        trainingModeManuallyOpened = false
+        closeTrainingMode()
+    }
+
+    private func closeTrainingMode() {
+        guard !isTrainingModeExiting else { return }
+        isTrainingModeExiting = true
+        trainingExitTask?.cancel()
+        trainingExitTask = Task { @MainActor in
+            if !reduceMotion {
+                do { try await Task.sleep(nanoseconds: 3_200_000_000) } catch { return }
+            }
+            guard !Task.isCancelled else { return }
+            isTrainingMode = false
+            isTrainingModeExiting = false
+            showFullLayout = false
         }
     }
 

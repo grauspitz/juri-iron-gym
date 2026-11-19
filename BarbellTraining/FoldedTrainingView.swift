@@ -24,15 +24,26 @@ enum TrainingFeedback {
 
 struct FoldedTrainingView: View {
     @EnvironmentObject private var store: TrainingStore
-    @State private var selectedPlateID: UUID?
-    @State private var showWeightCalculator = false
-    @State private var pendingWeightSelection: [UUID: Int]?
     @State private var controlContentHeight: CGFloat = 0
     @FocusState private var customActionFocused: Bool
-    @State private var showCustomActionEditor = false
-    @State private var customActionDraft = ""
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var sceneVisible = false
+    @State private var hudVisible = false
+    @State private var controlsVisible = false
+    @State private var energyVisible = false
+    @State private var screenPowered = false
+    @State private var bootVisible = true
+    @State private var bootStarted = Date()
+    @State private var shutdownStarted = Date()
+    @State private var shutdownStage = 0
+    @AppStorage("trainingStartupSound") private var trainingStartupSound = true
     let fold: CGRect
     let height: CGFloat
+    let width: CGFloat
+    let isLandscape: Bool
+    let leadingInset: CGFloat
+    let trailingInset: CGFloat
+    let bottomInset: CGFloat
     @Binding var reps: Int
     @Binding var note: String
     @Binding var deadline: Date?
@@ -40,13 +51,23 @@ struct FoldedTrainingView: View {
     @Binding var duration: Int
     @Binding var totalDuration: Int
     @Binding var showFullLayout: Bool
+    @Binding var selectedPlateID: UUID?
+    @Binding var showWeightCalculator: Bool
+    @Binding var pendingWeightSelection: [UUID: Int]?
+    @Binding var showCustomActionEditor: Bool
+    @Binding var customActionDraft: String
     let fullLayout: AnyView
     let record: () -> Void
     let reuse: () -> Void
+    let exit: () -> Void
+    let fullStartup: Bool
+    let isExiting: Bool
 
     var body: some View {
         VStack(spacing: 0) {
-            Group {
+            HStack(spacing: 0) {
+                if isLandscape { speaker }
+                Group {
                 if showFullLayout {
                     fullLayout
                 } else if showWeightCalculator {
@@ -54,6 +75,9 @@ struct FoldedTrainingView: View {
                 } else {
                     display
                 }
+                }
+                .frame(maxWidth: .infinity)
+                if isLandscape { speaker }
             }
                 .frame(maxWidth: .infinity)
                 .frame(height: max(0, fold.minY))
@@ -82,18 +106,151 @@ struct FoldedTrainingView: View {
                         .padding(10)
                     }
                 }
+        .scaleEffect(x: 1, y: reduceMotion || (screenPowered && !isExiting) ? 1 : 0.006, anchor: .center)
+        .opacity(reduceMotion || screenPowered ? 1 : 0)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.5).delay(isExiting ? 2.4 : 0), value: screenPowered && !isExiting)
+        .overlay {
+            GeometryReader { geometry in
+                Capsule()
+                    .fill(LinearGradient(colors: [.clear, .purple, .white, .purple, .clear], startPoint: .leading, endPoint: .trailing))
+                    .frame(width: geometry.size.width * (energyVisible && !isExiting ? 0.95 : 0.02), height: 3)
+                    .shadow(color: .purple, radius: 12)
+                    .shadow(color: .pink, radius: 22)
+                    .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+                    .opacity(reduceMotion ? 0 : (isExiting ? 1 : (hudVisible ? 0 : 1)))
+                    .animation(reduceMotion ? nil : .easeInOut(duration: isExiting ? 0.6 : 0.35), value: energyVisible && !isExiting)
+                    .animation(reduceMotion ? nil : .easeOut(duration: 0.25), value: hudVisible)
+            }.allowsHitTesting(false)
+        }
+                .overlay {
+                    if !reduceMotion && isExiting {
+                        TrainingShutdownScreen(started: shutdownStarted)
+                            .allowsHitTesting(false)
+                    } else if !reduceMotion && bootVisible {
+                        TrainingBootScreen(started: bootStarted, duration: fullStartup ? 4.5 : 1.2, isShutdown: false)
+                            .transition(.opacity)
+                            .allowsHitTesting(false)
+                    }
+                }
                 .clipped()
             FoldHinge().frame(height: max(0, fold.height))
                 .accessibilityHidden(true)
             controls
+                .padding(.horizontal, isLandscape ? max(leadingInset, trailingInset, 24) : max(leadingInset, trailingInset))
+                .padding(.bottom, bottomInset)
+                .background {
+                    ControllerPanelBackground()
+                        .overlay { panelReflection }
+                }
+                .overlay { Color.black.opacity(shutdownStage >= 4 ? 0.94 : 0).allowsHitTesting(false) }
+                .animation(reduceMotion ? nil : .easeInOut(duration: 0.8), value: shutdownStage >= 4)
+                .opacity(controlsVisible ? 1 : 0)
+                .offset(y: controlsVisible ? 0 : 20)
+                .animation(reduceMotion ? nil : .easeOut(duration: 0.35), value: controlsVisible)
                 .frame(maxWidth: .infinity)
                 .frame(height: max(0, height - fold.maxY))
+        }
+        .background {
+            TimelineView(.periodic(from: .now, by: 1)) { context in
+                GeometryReader { geometry in
+                    VStack(spacing: 0) {
+                        Image(isLandscape ? "ArcadePanelMaterial" : FoldedTrainingDisplay.backgroundImageName(note: note, isResting: (remaining(at: context.date) ?? 0) > 0))
+                            .resizable().scaledToFill()
+                            .frame(width: geometry.size.width, height: max(0, fold.minY))
+                            .clipped()
+                            .opacity(sceneVisible && !isExiting ? 1 : 0)
+                        Color.black.frame(height: max(0, fold.height))
+                        ControllerPanelBackground()
+                            .frame(height: max(0, height - fold.maxY))
+                            .opacity(controlsVisible && shutdownStage < 4 ? 1 : 0)
+                    }
+                    .animation(reduceMotion ? nil : .easeOut(duration: 0.3), value: sceneVisible && !isExiting)
+                    .animation(reduceMotion ? nil : .easeOut(duration: 0.3), value: controlsVisible)
+                }
+            }
+            .ignoresSafeArea(.container, edges: .horizontal)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+        }
+        .allowsHitTesting(hudVisible && !bootVisible && !isExiting)
+        .task { await startAnimation() }
+        .task(id: isExiting) { await updateShutdownSequence() }
+        .onChange(of: isExiting) { exiting in
+            if exiting { shutdownStarted = Date() }
         }
         .onAppear {
             if note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 note = "硬拉"
             }
         }
+    }
+
+    @MainActor private func startAnimation() async {
+        if reduceMotion {
+            screenPowered = true
+            sceneVisible = true
+            hudVisible = true
+            controlsVisible = true
+            bootVisible = false
+            return
+        }
+        do {
+            bootStarted = Date()
+            controlsVisible = true
+            energyVisible = true
+            if trainingStartupSound { TrainingSound.adjust() }
+            try await Task.sleep(nanoseconds: fullStartup ? 500_000_000 : 150_000_000)
+            screenPowered = true
+            if fullStartup {
+                try await Task.sleep(nanoseconds: 700_000_000)
+                if trainingStartupSound { TrainingSound.tap() }
+                try await Task.sleep(nanoseconds: 2_600_000_000)
+            } else {
+                try await Task.sleep(nanoseconds: 650_000_000)
+            }
+            sceneVisible = true
+            hudVisible = true
+            if trainingStartupSound { TrainingSound.confirm() }
+            try await Task.sleep(nanoseconds: fullStartup ? 700_000_000 : 400_000_000)
+            withAnimation(.easeOut(duration: 0.2)) { bootVisible = false }
+        } catch { return }
+    }
+
+    @MainActor private func updateShutdownSequence() async {
+        shutdownStage = 0
+        guard isExiting else { return }
+        for stage in 1...4 {
+            do { try await Task.sleep(nanoseconds: 150_000_000) } catch { return }
+            shutdownStage = stage
+        }
+    }
+
+    private var panelReflection: some View {
+        GeometryReader { geometry in
+            Image(FoldedTrainingDisplay.backgroundImageName(note: note, isResting: (remaining(at: Date()) ?? 0) > 0))
+                .resizable().scaledToFill()
+                .frame(width: geometry.size.width, height: geometry.size.height)
+                .scaleEffect(x: 1, y: -1)
+                .blur(radius: 18)
+                .opacity(sceneVisible && !isExiting ? 0.10 : 0)
+                .mask(LinearGradient(colors: [.white, .clear], startPoint: .top, endPoint: .bottom))
+                .clipped()
+                .overlay {
+                    LinearGradient(colors: [.purple.opacity(0.12), .clear], startPoint: .top, endPoint: .bottom)
+                        .opacity(sceneVisible && !isExiting ? 1 : 0)
+                }
+                .animation(reduceMotion ? nil : .easeOut(duration: 0.6), value: sceneVisible && !isExiting)
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    private var speaker: some View {
+        let pictureWidth = min(width, max(0, fold.minY) * (1491.0 / 1055.0))
+        return ArcadeSpeakerPanel()
+            .frame(width: max(0, (width - pictureWidth) / 2))
+            .accessibilityHidden(true)
+            .allowsHitTesting(false)
     }
 
     private var weightCalculator: some View {
@@ -106,7 +263,7 @@ struct FoldedTrainingView: View {
 
     private var display: some View {
         TimelineView(.periodic(from: .now, by: 1)) { context in
-            FoldedTrainingDisplay(reps: reps, note: $note, remainingSeconds: remaining(at: context.date), totalDuration: totalDuration, isPaused: pausedSeconds != nil)
+            FoldedTrainingDisplay(reps: reps, note: $note, remainingSeconds: remaining(at: context.date), totalDuration: totalDuration, isPaused: pausedSeconds != nil, showEntireScene: isLandscape, sceneVisible: sceneVisible && !isExiting, hudVisible: hudVisible && !isExiting)
         }
     }
 
@@ -141,6 +298,9 @@ struct FoldedTrainingView: View {
                     .frame(maxWidth: .infinity)
                 }
                 .frame(height: buttonSize)
+                .saturation(shutdownStage >= 3 ? 0 : 1)
+                .brightness(shutdownStage >= 3 ? -0.32 : 0)
+                .animation(.easeOut(duration: 0.18), value: shutdownStage >= 3)
             }
             .padding(8)
             .font(.custom("ZCOOLQingKeHuangYou-Regular", size: 17))
@@ -149,7 +309,6 @@ struct FoldedTrainingView: View {
             .onPreferenceChange(ControlContentHeightKey.self) { controlContentHeight = $0 }
             .disabled(showCustomActionEditor)
         }
-        .background(ControllerPanelBackground().ignoresSafeArea(.container, edges: .bottom))
         .overlay(alignment: .top) {
             if showCustomActionEditor { customActionEditor }
         }
@@ -236,6 +395,9 @@ struct FoldedTrainingView: View {
             }.metalPanel()
             HStack(spacing: 8) {
                 totalWeight
+                    .saturation(shutdownStage >= 2 ? 0 : 1)
+                    .brightness(shutdownStage >= 2 ? -0.32 : 0)
+                    .animation(.easeOut(duration: 0.18), value: shutdownStage >= 2)
                 ActionProgressView(action: note, compact: true)
                     .foregroundStyle(.white.opacity(0.75))
                     .frame(maxWidth: .infinity, alignment: .trailing)
@@ -301,6 +463,7 @@ struct FoldedTrainingView: View {
         HStack(spacing: 6) {
             Button("完整功能") { TrainingFeedback.tap(); showWeightCalculator = false; showFullLayout = true }.buttonStyle(ConsoleHeaderButtonStyle())
             Button("一键配重") { TrainingFeedback.tap(); pendingWeightSelection = nil; showFullLayout = false; showWeightCalculator = true }.buttonStyle(ConsoleHeaderButtonStyle())
+            Button("退出模式", action: exit).buttonStyle(ConsoleHeaderButtonStyle())
         }
         .fixedSize()
     }
@@ -313,6 +476,9 @@ struct FoldedTrainingView: View {
             Button("3 分钟") { TrainingFeedback.tap(); duration = 180 }
         } label: {
             LCDDisplay(value: String(format: "%02d:%02d", duration / 60, duration % 60), unit: "REST")
+                .saturation(shutdownStage >= 1 ? 0 : 1)
+                .brightness(shutdownStage >= 1 ? -0.32 : 0)
+                .animation(.easeOut(duration: 0.18), value: shutdownStage >= 1)
         }
         .accessibilityLabel("休息时长，\(duration) 秒")
         .accessibilityHint("选择休息时长")

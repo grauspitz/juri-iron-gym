@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+        D00000000000000000000003 /* TrainingBootScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00000000000000000000004 /* TrainingBootScreen.swift */; };
+        D00000000000000000000001 /* TrainingModeTabProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00000000000000000000002 /* TrainingModeTabProbe.swift */; };
  C00000000000000000000001 /* TrainingSounds in Resources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000002 /* TrainingSounds */; };
  B00000000000000000000007 /* Widget Chinese Font */ = {isa = PBXBuildFile; fileRef = A00000000000000000000031; };
  B00000000000000000000008 /* Widget Orbitron Font */ = {isa = PBXBuildFile; fileRef = A00000000000000000000030; };
@@ -45,6 +47,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+        D00000000000000000000004 /* TrainingBootScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingBootScreen.swift; sourceTree = "<group>"; };
+        D00000000000000000000002 /* TrainingModeTabProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingModeTabProbe.swift; sourceTree = "<group>"; };
  C00000000000000000000002 /* TrainingSounds */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TrainingSounds; sourceTree = "<group>"; };
  B00000000000000000000010 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarbellTraining/TrainingWidgetShared.swift; sourceTree = "<group>"; };
  B00000000000000000000011 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarbellTraining/TrainingWidgetBridge.swift; sourceTree = "<group>"; };
@@ -136,6 +140,8 @@
                 A00000000000000000000042 /* TrainingEnergy.swift */,
                 A00000000000000000000044 /* TrainingAdvice.swift */,
                 A00000000000000000000046 /* TrainingDashboard.swift */,
+                D00000000000000000000002 /* TrainingModeTabProbe.swift */,
+                D00000000000000000000004 /* TrainingBootScreen.swift */,
                 A00000000000000000000090 /* OuterLandscapeMenu.swift */,
 				A0000000000000000000000A /* ContentView.swift */,
 				A00000000000000000000020 /* TrainingEditors.swift */,
@@ -235,6 +241,8 @@
                 A00000000000000000000043 /* TrainingEnergy.swift in Sources */,
                 A00000000000000000000045 /* TrainingAdvice.swift in Sources */,
                 A00000000000000000000047 /* TrainingDashboard.swift in Sources */,
+                D00000000000000000000001 /* TrainingModeTabProbe.swift in Sources */,
+                D00000000000000000000003 /* TrainingBootScreen.swift in Sources */,
                 A00000000000000000000091 /* OuterLandscapeMenu.swift in Sources */,
 				A0000000000000000000000D /* ContentView.swift in Sources */,
 				A00000000000000000000022 /* TrainingEditors.swift in Sources */,
