@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D0000000000000000000001B /* ContentTrainingSections.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0000000000000000000001A /* ContentTrainingSections.swift */; };
+		D00000000000000000000019 /* ContentPages.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00000000000000000000018 /* ContentPages.swift */; };
+		D00000000000000000000017 /* FoldedConsoleControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00000000000000000000016 /* FoldedConsoleControls.swift */; };
+		D00000000000000000000015 /* FoldedLandscapeControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00000000000000000000014 /* FoldedLandscapeControls.swift */; };
+		D00000000000000000000013 /* TrainingSupportingViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00000000000000000000012 /* TrainingSupportingViews.swift */; };
+		D00000000000000000000011 /* HandheldControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00000000000000000000010 /* HandheldControls.swift */; };
         D00000000000000000000003 /* TrainingBootScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00000000000000000000004 /* TrainingBootScreen.swift */; };
         D00000000000000000000001 /* TrainingModeTabProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00000000000000000000002 /* TrainingModeTabProbe.swift */; };
  C00000000000000000000001 /* TrainingSounds in Resources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000002 /* TrainingSounds */; };
@@ -47,6 +53,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D0000000000000000000001A /* ContentTrainingSections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentTrainingSections.swift; sourceTree = "<group>"; };
+		D00000000000000000000018 /* ContentPages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentPages.swift; sourceTree = "<group>"; };
+		D00000000000000000000016 /* FoldedConsoleControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoldedConsoleControls.swift; sourceTree = "<group>"; };
+		D00000000000000000000014 /* FoldedLandscapeControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoldedLandscapeControls.swift; sourceTree = "<group>"; };
+		D00000000000000000000012 /* TrainingSupportingViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSupportingViews.swift; sourceTree = "<group>"; };
+		D00000000000000000000010 /* HandheldControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandheldControls.swift; sourceTree = "<group>"; };
         D00000000000000000000004 /* TrainingBootScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingBootScreen.swift; sourceTree = "<group>"; };
         D00000000000000000000002 /* TrainingModeTabProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingModeTabProbe.swift; sourceTree = "<group>"; };
  C00000000000000000000002 /* TrainingSounds */ = {isa = PBXFileReference; lastKnownFileType = folder; path = TrainingSounds; sourceTree = "<group>"; };
@@ -143,11 +155,17 @@
                 D00000000000000000000002 /* TrainingModeTabProbe.swift */,
                 D00000000000000000000004 /* TrainingBootScreen.swift */,
                 A00000000000000000000090 /* OuterLandscapeMenu.swift */,
+				D00000000000000000000018 /* ContentPages.swift */,
+				D0000000000000000000001A /* ContentTrainingSections.swift */,
 				A0000000000000000000000A /* ContentView.swift */,
 				A00000000000000000000020 /* TrainingEditors.swift */,
 				A00000000000000000000021 /* TrainingExtras.swift */,
 				A00000000000000000000026 /* TrainingTools.swift */,
 				A00000000000000000000028 /* TrainingTheme.swift */,
+				D00000000000000000000010 /* HandheldControls.swift */,
+				D00000000000000000000012 /* TrainingSupportingViews.swift */,
+				D00000000000000000000014 /* FoldedLandscapeControls.swift */,
+				D00000000000000000000016 /* FoldedConsoleControls.swift */,
 				A0000000000000000000002A /* FoldedTrainingView.swift */,
 				A00000000000000000000038 /* ArcadeMaterials.swift */,
 				A0000000000000000000002C /* FoldedTrainingDisplay.swift */,
@@ -244,11 +262,17 @@
                 D00000000000000000000001 /* TrainingModeTabProbe.swift in Sources */,
                 D00000000000000000000003 /* TrainingBootScreen.swift in Sources */,
                 A00000000000000000000091 /* OuterLandscapeMenu.swift in Sources */,
+				D00000000000000000000019 /* ContentPages.swift in Sources */,
+				D0000000000000000000001B /* ContentTrainingSections.swift in Sources */,
 				A0000000000000000000000D /* ContentView.swift in Sources */,
 				A00000000000000000000022 /* TrainingEditors.swift in Sources */,
 				A00000000000000000000023 /* TrainingExtras.swift in Sources */,
 				A00000000000000000000027 /* TrainingTools.swift in Sources */,
 				A00000000000000000000029 /* TrainingTheme.swift in Sources */,
+				D00000000000000000000011 /* HandheldControls.swift in Sources */,
+				D00000000000000000000013 /* TrainingSupportingViews.swift in Sources */,
+				D00000000000000000000015 /* FoldedLandscapeControls.swift in Sources */,
+				D00000000000000000000017 /* FoldedConsoleControls.swift in Sources */,
 				A0000000000000000000002B /* FoldedTrainingView.swift in Sources */,
 				A00000000000000000000039 /* ArcadeMaterials.swift in Sources */,
 				A0000000000000000000002D /* FoldedTrainingDisplay.swift in Sources */,
