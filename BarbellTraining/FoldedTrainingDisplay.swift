@@ -44,6 +44,15 @@ struct FoldedTrainingDisplay: View {
             let targetY = viewport.height * scene.visibleBarPosition
             let yOffset = showEntireScene ? (viewport.height - height) / 2 : min(0, max(viewport.height - height, targetY - height * scene.barY))
             ZStack(alignment: .topLeading) {
+                if showEntireScene {
+                    Image(Self.backgroundImageName(note: note, isResting: isResting))
+                        .resizable().scaledToFill()
+                        .frame(width: viewport.width, height: viewport.height)
+                        .blur(radius: 20)
+                        .overlay(Color.black.opacity(0.35))
+                        .clipped()
+                        .allowsHitTesting(false)
+                }
                 if isResting {
                     ZStack {
                         Image("FoldedRestBurnoutSoft").resizable().aspectRatio(contentMode: showEntireScene ? .fit : .fill)
@@ -137,6 +146,7 @@ struct FoldedTrainingDisplay: View {
             }
         }
         .frame(width: size.width, height: size.height)
+        .allowsHitTesting(false)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(plateDescription)
     }

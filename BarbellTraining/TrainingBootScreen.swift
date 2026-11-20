@@ -18,7 +18,7 @@ struct TrainingBootScreen: View {
 
             GeometryReader { geometry in
                 ZStack {
-                    Color.black
+                    bootBackdrop(size: geometry.size)
                     if !isShutdown && elapsed >= (full ? 0.5 : 0) && !showLogo {
                         Circle().stroke(Color.purple.opacity(0.7), lineWidth: 2)
                             .frame(width: min(geometry.size.width, geometry.size.height) * min(0.7, 0.1 + progress))
@@ -59,6 +59,21 @@ struct TrainingBootScreen: View {
         .accessibilityLabel(isShutdown ? "正在退出训练模式" : "正在启动训练模式")
     }
 
+    private func bootBackdrop(size: CGSize) -> some View {
+        ZStack {
+            LinearGradient(colors: [Color(red: 0.16, green: 0.02, blue: 0.24), Color(red: 0.04, green: 0.02, blue: 0.12), Color(red: 0.10, green: 0.02, blue: 0.17)], startPoint: .topLeading, endPoint: .bottomTrailing)
+            Image("TrainingStartupArtwork")
+                .resizable().scaledToFill()
+                .frame(width: size.width, height: size.height)
+                .blur(radius: 22)
+                .blendMode(.screen)
+                .opacity(0.45)
+        }
+        .frame(width: size.width, height: size.height)
+        .clipped()
+        .accessibilityHidden(true)
+    }
+
     private func progressBar(progress: Double, ready: Bool, color: Color) -> some View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
@@ -91,7 +106,8 @@ struct TrainingShutdownScreen: View {
             let remaining = max(0, min(1, 1 - (elapsed - 1.1) / 1.3))
             GeometryReader { geometry in
                 ZStack {
-                    Color.black.opacity(fadeIn)
+                    LinearGradient(colors: [Color(red: 0.14, green: 0.02, blue: 0.22), Color(red: 0.03, green: 0.02, blue: 0.09), Color(red: 0.12, green: 0.02, blue: 0.18)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                        .opacity(fadeIn * max(0, min(1, (2.9 - elapsed) / 0.5)))
                     if elapsed >= 0.35 && elapsed < 2.9 {
                         Circle()
                             .stroke(Color.purple.opacity(0.13 * energy), lineWidth: 1)

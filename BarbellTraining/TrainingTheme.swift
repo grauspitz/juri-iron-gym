@@ -144,8 +144,42 @@ struct TrainingActionStyle: ButtonStyle {
     var kind: Kind
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.handheldControls) private var handheldControls
+    @Environment(\.trainingModeUI) private var trainingModeUI
+    @Environment(\.trainingLandscape) private var trainingLandscape
 
-    func makeBody(configuration: Configuration) -> some View {
+    @ViewBuilder func makeBody(configuration: Configuration) -> some View {
+        if trainingModeUI && !handheldControls {
+            configuration.label
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(Color(red: 0.15, green: 0.03, blue: 0.12))
+                .padding(.horizontal, 14)
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .background(LinearGradient(colors: [Color(red: 1, green: 0.70, blue: 0.84), Color(red: 0.95, green: 0.34, blue: 0.62)], startPoint: .top, endPoint: .bottom), in: RoundedRectangle(cornerRadius: 8))
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(red: 0.30, green: 0.03, blue: 0.22), lineWidth: 2))
+                .shadow(color: .black.opacity(0.5), radius: 1, y: configuration.isPressed ? 1 : 3)
+                .offset(y: configuration.isPressed ? 2 : 0)
+                .opacity(isEnabled ? 1 : 0.5)
+        } else if handheldControls && !trainingLandscape {
+            configuration.label
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 20)
+                .frame(minHeight: 44)
+                .background {
+                    Capsule().fill(Color(red: 0.48, green: 0.02, blue: 0.04))
+                        .offset(y: 3).shadow(color: .black.opacity(0.55), radius: 2, y: 3)
+                    Capsule().fill(LinearGradient(colors: [Color(red: 1, green: 0.32, blue: 0.34), Color(red: 0.87, green: 0.035, blue: 0.08), Color(red: 0.67, green: 0.02, blue: 0.05)], startPoint: .top, endPoint: .bottom))
+                        .overlay(Capsule().stroke(Color.black.opacity(0.45), lineWidth: 1))
+                        .overlay(Capsule().inset(by: 2).stroke(Color.white.opacity(0.22), lineWidth: 1))
+                }
+                .offset(y: configuration.isPressed ? 2 : 0)
+                .opacity(isEnabled ? 1 : 0.5)
+        } else if handheldControls {
+            PlasticButtonStyle(color: Color(red: 1, green: 0.66, blue: 0.76), padded: true)
+                .makeBody(configuration: configuration)
+                .font(.subheadline.weight(.semibold))
+        } else {
         configuration.label
             .font(.subheadline.weight(.semibold))
             .frame(maxWidth: .infinity, minHeight: 46)
@@ -153,6 +187,7 @@ struct TrainingActionStyle: ButtonStyle {
             .background(kind == .primary ? TrainingTheme.accent : TrainingTheme.accent.opacity(0.10), in: Capsule())
             .opacity(isEnabled ? (configuration.isPressed ? 0.7 : 1) : 0.4)
             .contentShape(Capsule())
+        }
     }
 }
 

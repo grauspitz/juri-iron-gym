@@ -1,10 +1,15 @@
 import SwiftUI
 
 struct BarWeightView: View {
+    var onClose: (() -> Void)? = nil
     @EnvironmentObject private var store: TrainingStore
     @Environment(\.dismiss) private var dismiss
     @State private var weight = ""
     @State private var error = false
+
+    private func close() {
+        if let onClose = onClose { onClose() } else { dismiss() }
+    }
 
     var body: some View {
         NavigationStack {
@@ -21,14 +26,15 @@ struct BarWeightView: View {
             .onAppear { weight = store.barWeight.formattedWeight }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button { dismiss() } label: { Label("返回", systemImage: "chevron.left") }.tint(.primary)
+                    Button { close() } label: { Label("返回", systemImage: "chevron.left") }.buttonStyle(TrainingModalButtonStyle()).tint(.primary)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("保存") {
                         guard let value = Double(weight.replacingOccurrences(of: ",", with: ".")), value.isFinite, value > 0, value <= 1000 else { error = true; return }
                         store.barWeight = value
-                        dismiss()
+                        close()
                     }
+                    .buttonStyle(TrainingModalButtonStyle())
                 }
             }
         }
@@ -108,7 +114,7 @@ struct EditNoteView: View {
             .background(TrainingBackground())
             .navigationTitle("编辑训练记录")
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button { dismiss() } label: { Label("返回", systemImage: "chevron.left") }.tint(.primary) }
+                ToolbarItem(placement: .cancellationAction) { Button { dismiss() } label: { Label("返回", systemImage: "chevron.left") }.buttonStyle(TrainingModalButtonStyle()).tint(.primary) }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("保存") {
                         if useLoads && parsedBar == nil { error = true; return }
@@ -128,6 +134,7 @@ struct EditNoteView: View {
                         }
                         dismiss()
                     }
+                    .buttonStyle(TrainingModalButtonStyle())
                 }
             }
         }

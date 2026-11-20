@@ -24,6 +24,8 @@ struct ContentView: View {
     @State private var restTotalDuration = 90
     @State private var pausedRestSeconds: Int?
     @State private var showFullLayout = false
+    @State private var arcadeMenuFocus = -1
+    @State private var isTrainingLandscape = false
     @State private var calendarDate = Date()
     @State private var trainingModeAnchor: CGRect?
     @State private var selectedFoldedPlateID: UUID?
@@ -75,7 +77,7 @@ struct ContentView: View {
                         let fold = horizontalFold(in: geometry) ?? CGRect(x: 0, y: geometry.size.height * 0.45, width: geometry.size.width, height: 0)
                         let leadingInset = safeGeometry.safeAreaInsets.leading
                         let trailingInset = safeGeometry.safeAreaInsets.trailing
-                        FoldedTrainingView(fold: fold, height: geometry.size.height, width: geometry.size.width, isLandscape: geometry.size.width > geometry.size.height, leadingInset: leadingInset, trailingInset: trailingInset, bottomInset: safeGeometry.safeAreaInsets.bottom, reps: $reps, note: $note, deadline: $restDeadline, pausedSeconds: $pausedRestSeconds, duration: $restDuration, totalDuration: $restTotalDuration, showFullLayout: $showFullLayout, selectedPlateID: $selectedFoldedPlateID, showWeightCalculator: $showFoldedWeightCalculator, pendingWeightSelection: $pendingFoldedWeightSelection, showCustomActionEditor: $showFoldedCustomActionEditor, customActionDraft: $foldedCustomActionDraft, fullLayout: AnyView(foldedFullLayout), record: recordSet, reuse: reusePreviousSet, exit: exitTrainingMode, fullStartup: fullTrainingStartup, isExiting: isTrainingModeExiting)
+                        FoldedTrainingView(fold: fold, height: geometry.size.height, width: geometry.size.width, isLandscape: geometry.size.width > geometry.size.height, leadingInset: leadingInset, trailingInset: trailingInset, bottomInset: safeGeometry.safeAreaInsets.bottom, reps: $reps, note: $note, deadline: $restDeadline, pausedSeconds: $pausedRestSeconds, duration: $restDuration, totalDuration: $restTotalDuration, showFullLayout: $showFullLayout, menuFocus: $arcadeMenuFocus, selectedPlateID: $selectedFoldedPlateID, showWeightCalculator: $showFoldedWeightCalculator, pendingWeightSelection: $pendingFoldedWeightSelection, showCustomActionEditor: $showFoldedCustomActionEditor, customActionDraft: $foldedCustomActionDraft, fullLayout: AnyView(foldedFullLayout), menuBack: closeTrainingMenu, menuConfirm: confirmFocusedTrainingMenu, record: recordSet, reuse: reusePreviousSet, exit: exitTrainingMode, fullStartup: fullTrainingStartup, isExiting: isTrainingModeExiting)
                             .transition(.opacity)
                     } else {
                         dashboard.transition(.opacity)
@@ -84,8 +86,12 @@ struct ContentView: View {
                 .animation(reduceMotion ? nil : .easeInOut(duration: 0.12), value: isTrainingMode)
                 }
                 .onAppear {
+                    isTrainingLandscape = geometry.size.width > geometry.size.height
                     isHorizontalFolded = horizontalFold(in: geometry) != nil
                     if isHorizontalFolded { beginTrainingMode(manual: false) }
+                }
+                .onChange(of: geometry.size) { size in
+                    isTrainingLandscape = size.width > size.height
                 }
                 .onChange(of: horizontalFold(in: geometry) != nil) { folded in
                     isHorizontalFolded = folded
@@ -147,11 +153,12 @@ struct ContentView: View {
                 }
                 .presentationDetents(isHorizontalFolded ? [.fraction(0.5)] : [.large])
             }
-            .fullScreenCover(isPresented: $showTools) { toolsPage }
-            .fullScreenCover(isPresented: $showOverview) { overviewPage }
-            .sheet(isPresented: $showCalculator) { calculatorPage }
+            .fullScreenCover(isPresented: Binding(get: { !isTrainingMode && showTools }, set: { showTools = $0 })) { toolsPage }
+            .fullScreenCover(isPresented: Binding(get: { !isTrainingMode && showOverview }, set: { showOverview = $0 })) { overviewPage }
+            .sheet(isPresented: Binding(get: { !isTrainingMode && showCalculator }, set: { showCalculator = $0 })) { calculatorPage }
         }
         .tint(TrainingTheme.accent)
+        .environment(\.trainingModeUI, isTrainingMode)
         .sheet(item: $shortcutShareImage) { item in
             TrainingSharePreview(image: item.image)
                 .onAppear { ShareShortcutLog.write("preview_appeared") }
@@ -238,23 +245,71 @@ struct ContentView: View {
                           showTools: { showTools = true }, enterTrainingMode: enterTrainingMode)
     }
 
-    private var foldedFullLayout: some View {
-        NavigationStack {
-            dashboard(compactMenuEnabled: false).background(TrainingBackground())
-                .navigationTitle("完整功能")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar { ToolbarItem(placement: .confirmationAction) { Button("完成") { showFullLayout = false } } }
-                .fullScreenCover(isPresented: $showTools) { toolsPage }
-                .fullScreenCover(isPresented: $showOverview) { overviewPage }
-                .sheet(isPresented: $showCalculator) { calculatorPage }
+    private func confirmFocusedTrainingMenu() -> Bool {
+        guard !showTools && !showOverview && !showCalculator && !showBarSettings && !showAdd && editingPlate == nil else { return false }
+        switch arcadeMenuFocus {
+        case 0: showCalculator = true
+        case 1, 2: showTools = true
+        default: return false
         }
+        return true
+    }
+
+    private func closeTrainingMenu() {
+        if showBarSettings { showBarSettings = false }
+        else if showAdd { showAdd = false }
+        else if editingPlate != nil { editingPlate = nil }
+        else if showCalculator { showCalculator = false }
+        else if showTools { showTools = false }
+        else if showOverview { showOverview = false }
+        else { showFullLayout = false }
+    }
+
+    private var foldedFullLayout: some View {
+        VStack(spacing: 0) {
+            HStack {
+                if !isTrainingLandscape {
+                    Button("返回", action: closeTrainingMenu)
+                        .buttonStyle(TrainingModalButtonStyle())
+                }
+                Spacer()
+                Text(showCalculator ? "自动配重" : showTools ? "工具与设置" : showOverview ? "训练概览" : "完整功能")
+                    .font(.system(size: 15, weight: .bold, design: .monospaced)).tracking(1).foregroundStyle(Color(red: 0.72, green: 0.94, blue: 0.77)).lineLimit(1)
+                Spacer()
+            }
+            .padding(.horizontal, 8)
+            .background(Color(red: 0.08, green: 0.03, blue: 0.14))
+            Group {
+                if showBarSettings {
+                    BarWeightView(onClose: { showBarSettings = false })
+                } else if showAdd {
+                    AddPlateView(onClose: { showAdd = false })
+                } else if let plate = editingPlate {
+                    AddPlateView(plate: plate, onClose: { editingPlate = nil }).id(plate.id)
+                } else if showTools {
+                    toolsContent()
+                } else if showOverview {
+                    overviewContent
+                } else if showCalculator {
+                    List { WeightCalculatorSection().listRowBackground(TrainingTheme.card) }
+                        .scrollContentBackground(.hidden).background(TrainingBackground())
+                } else {
+                    dashboard(compactMenuEnabled: false).background(TrainingBackground())
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .clipped()
+        }
+        .environment(\.colorScheme, .dark)
+        .environment(\.handheldControls, false)
+        .environment(\.arcadeMenuFocus, arcadeMenuFocus)
     }
 
     private var toolsPage: some View {
         NavigationStack {
             toolsContent()
                 .navigationTitle("工具与设置")
-                .toolbar { ToolbarItem(placement: .cancellationAction) { Button { showTools = false } label: { Label("返回", systemImage: "chevron.backward") } } }
+                .toolbar { ToolbarItem(placement: .cancellationAction) { Button { showTools = false } label: { Label("返回", systemImage: "chevron.backward") }.buttonStyle(TrainingModalButtonStyle()) } }
         }
     }
 
@@ -299,9 +354,9 @@ struct ContentView: View {
             }
         }
         .background(TrainingBackground())
-        .sheet(isPresented: $showBarSettings) { BarWeightView() }
-        .sheet(isPresented: $showAdd) { AddPlateView() }
-        .sheet(item: $editingPlate) { plate in AddPlateView(plate: plate) }
+        .sheet(isPresented: Binding(get: { !isTrainingMode && showBarSettings }, set: { showBarSettings = $0 })) { BarWeightView() }
+        .sheet(isPresented: Binding(get: { !isTrainingMode && showAdd }, set: { showAdd = $0 })) { AddPlateView() }
+        .sheet(item: Binding(get: { isTrainingMode ? nil : editingPlate }, set: { editingPlate = $0 })) { plate in AddPlateView(plate: plate) }
     }
 
     private var trainingAnimationSettings: some View {
@@ -335,7 +390,7 @@ struct ContentView: View {
         NavigationStack {
             overviewContent
                 .navigationTitle("训练概览")
-                .toolbar { ToolbarItem(placement: .cancellationAction) { Button { showOverview = false } label: { Label("返回", systemImage: "chevron.backward") } } }
+                .toolbar { ToolbarItem(placement: .cancellationAction) { Button { showOverview = false } label: { Label("返回", systemImage: "chevron.backward") }.buttonStyle(TrainingModalButtonStyle()) } }
         }
     }
 
@@ -375,7 +430,7 @@ struct ContentView: View {
             List { WeightCalculatorSection().listRowBackground(TrainingTheme.card) }
                 .scrollContentBackground(.hidden).background(TrainingBackground())
                 .navigationTitle("自动配重")
-                .toolbar { ToolbarItem(placement: .confirmationAction) { Button("完成") { showCalculator = false } } }
+                .toolbar { ToolbarItem(placement: .confirmationAction) { Button("完成") { showCalculator = false }.buttonStyle(TrainingModalButtonStyle()) } }
         }
     }
 
@@ -749,18 +804,24 @@ struct AddPlateView: View {
     @EnvironmentObject private var store: TrainingStore
     @Environment(\.dismiss) private var dismiss
     let plate: Plate?
+    let onClose: (() -> Void)?
     @State private var weight: String
     @State private var unit: String
     @State private var color: Color
     @State private var error = false
     @State private var availablePairs: Int
 
-    init(plate: Plate? = nil) {
+    init(plate: Plate? = nil, onClose: (() -> Void)? = nil) {
         self.plate = plate
+        self.onClose = onClose
         _weight = State(initialValue: plate?.weight.formattedWeight ?? "")
         _unit = State(initialValue: plate?.unit ?? "kg")
         _color = State(initialValue: Color(hex: plate?.colorHex))
         _availablePairs = State(initialValue: plate?.availablePairs ?? 1)
+    }
+
+    private func close() {
+        if let onClose = onClose { onClose() } else { dismiss() }
     }
 
     var body: some View {
@@ -779,13 +840,14 @@ struct AddPlateView: View {
             .background(TrainingBackground())
             .navigationTitle(plate == nil ? "添加规格" : "编辑规格")
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) { Button { dismiss() } label: { Label("返回", systemImage: "chevron.left") }.tint(.primary) }
+                ToolbarItem(placement: .navigationBarLeading) { Button { close() } label: { Label("返回", systemImage: "chevron.left") }.buttonStyle(TrainingModalButtonStyle()).tint(.primary) }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("保存") {
                         let normalized = weight.replacingOccurrences(of: ",", with: ".")
-                        if let value = Double(normalized), store.savePlate(id: plate?.id, weight: value, unit: unit, colorHex: color.hexValue, availablePairs: availablePairs) { dismiss() }
+                        if let value = Double(normalized), store.savePlate(id: plate?.id, weight: value, unit: unit, colorHex: color.hexValue, availablePairs: availablePairs) { close() }
                         else { error = true }
                     }
+                    .buttonStyle(TrainingModalButtonStyle())
                 }
             }
         }

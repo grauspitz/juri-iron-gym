@@ -2,6 +2,7 @@ import SwiftUI
 
 struct FoldedTrainingHUD: View {
     @EnvironmentObject private var store: TrainingStore
+    @Environment(\.handheldControls) private var handheldControls
     @Binding var note: String
     let reps: Int
     let totalWeight: Double
@@ -55,7 +56,7 @@ struct FoldedTrainingHUD: View {
 
     private func modeButton(_ name: String, height: CGFloat, roundedLeading: Bool, slanted: Bool) -> some View {
         let selected = TrainingStore.actionKey(note) == TrainingStore.actionKey(name)
-        let shape = ModeButtonShape(roundedLeading: roundedLeading, slanted: slanted)
+        let shape = ModeButtonShape(roundedLeading: roundedLeading, slanted: slanted && !handheldControls)
         return Button { TrainingFeedback.tap(); note = name } label: {
             HStack {
                 Spacer(minLength: 0)
@@ -67,7 +68,7 @@ struct FoldedTrainingHUD: View {
             .padding(.horizontal, 4)
             .frame(maxWidth: .infinity)
             .frame(height: height)
-            .modifier(ModeGlassStyle(shape: shape, selected: selected))
+            .modifier(ModeGlassStyle(shape: shape, selected: selected, handheld: handheldControls))
             .overlay(shape.stroke(selected ? neon : Color(red: 0.72, green: 0.28, blue: 0.88), lineWidth: selected ? 1.5 : 1))
             .shadow(color: selected ? neon.opacity(0.6) : Color.purple.opacity(0.35), radius: selected ? 5 : 2)
             .contentShape(shape)
@@ -160,12 +161,14 @@ struct FoldedTrainingHUD: View {
 private struct ModeGlassStyle: ViewModifier {
     let shape: ModeButtonShape
     let selected: Bool
+    let handheld: Bool
 
     func body(content: Content) -> some View {
         content.background(
             LinearGradient(
-                colors: selected
-                    ? [Color(red: 0.20, green: 0.34, blue: 0.12), Color(red: 0.06, green: 0.12, blue: 0.07)]
+                colors: handheld
+                    ? (selected ? [Color(red: 0.54, green: 0.85, blue: 0.18), Color(red: 0.25, green: 0.50, blue: 0.08)] : [Color(white: 0.55), Color(white: 0.24)])
+                    : selected ? [Color(red: 0.20, green: 0.34, blue: 0.12), Color(red: 0.06, green: 0.12, blue: 0.07)]
                     : [Color(red: 0.24, green: 0.13, blue: 0.29), Color(red: 0.08, green: 0.05, blue: 0.12)],
                 startPoint: .top, endPoint: .bottom
             ), in: shape

@@ -135,13 +135,14 @@ struct TrainingPlanEntryForm: View {
                         .foregroundColor(.secondary)
                 }
             }
+            .buttonStyle(TrainingModalButtonStyle())
             .tint(TrainingTheme.accent)
             .navigationTitle("开始训练")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("取消") { dismiss() }.foregroundColor(TrainingTheme.accent) }
+                ToolbarItem(placement: .cancellationAction) { Button("取消") { dismiss() }.buttonStyle(TrainingModalButtonStyle()) }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("开始训练") { confirm() }.foregroundColor(valid ? TrainingTheme.accent : .gray).disabled(!valid)
+                    Button("开始训练") { confirm() }.buttonStyle(TrainingModalButtonStyle(confirm: true)).disabled(!valid)
                 }
             }
         }
@@ -192,14 +193,15 @@ struct TrainingEntryForm: View {
                 }
             }
             .foregroundStyle(.primary)
+            .buttonStyle(TrainingModalButtonStyle())
             .tint(TrainingTheme.accent)
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("取消") { dismiss() }.foregroundColor(TrainingTheme.accent) }
+                ToolbarItem(placement: .cancellationAction) { Button("取消") { dismiss() }.buttonStyle(TrainingModalButtonStyle()) }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(title) { confirm() }
-                        .foregroundColor(action.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? .gray : TrainingTheme.accent)
+                        .buttonStyle(TrainingModalButtonStyle(confirm: true))
                         .disabled(action.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }

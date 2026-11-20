@@ -1,5 +1,92 @@
 import SwiftUI
 
+private struct TrainingModeUIKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
+private struct ArcadeMenuFocusKey: EnvironmentKey {
+    static let defaultValue = -1
+}
+
+private struct TrainingLandscapeKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
+private struct HandheldControlsKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
+extension EnvironmentValues {
+    var trainingModeUI: Bool {
+        get { self[TrainingModeUIKey.self] }
+        set { self[TrainingModeUIKey.self] = newValue }
+    }
+
+    var arcadeMenuFocus: Int {
+        get { self[ArcadeMenuFocusKey.self] }
+        set { self[ArcadeMenuFocusKey.self] = newValue }
+    }
+
+    var trainingLandscape: Bool {
+        get { self[TrainingLandscapeKey.self] }
+        set { self[TrainingLandscapeKey.self] = newValue }
+    }
+
+    var handheldControls: Bool {
+        get { self[HandheldControlsKey.self] }
+        set { self[HandheldControlsKey.self] = newValue }
+    }
+}
+
+struct PlasticButtonStyle: ButtonStyle {
+    var color: Color = Color(red: 0.88, green: 0.90, blue: 0.91)
+    var circular = false
+    var padded = false
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        let shape = RoundedRectangle(cornerRadius: circular ? 100 : 10)
+        return configuration.label
+            .padding(.horizontal, padded ? 12 : 0)
+            .frame(minHeight: padded ? 44 : 0)
+            .foregroundStyle(Color(white: 0.16))
+            .background {
+                shape.fill(LinearGradient(colors: [Color.white.opacity(0.95), color, color.opacity(0.85)], startPoint: .top, endPoint: .bottom))
+                    .overlay(shape.stroke(Color.black.opacity(0.22), lineWidth: 1))
+                    .overlay(shape.inset(by: 2).stroke(Color.white.opacity(0.55), lineWidth: 1))
+                    .shadow(color: .black.opacity(0.42), radius: configuration.isPressed ? 1 : 2, y: configuration.isPressed ? 1 : 4)
+            }
+            .offset(y: configuration.isPressed ? 2 : 0)
+            .opacity(isEnabled ? 1 : 0.6)
+    }
+}
+
+struct TrainingModalButtonStyle: ButtonStyle {
+    var confirm = false
+    @Environment(\.trainingModeUI) private var trainingModeUI
+    @Environment(\.isEnabled) private var isEnabled
+
+    @ViewBuilder func makeBody(configuration: Configuration) -> some View {
+        if trainingModeUI {
+            let accent = confirm ? Color(red: 0.65, green: 1, blue: 0.15) : Color(red: 0.35, green: 0.85, blue: 1)
+            configuration.label
+                .font(.system(size: 14, weight: .bold))
+                .lineLimit(1)
+                .foregroundStyle(isEnabled ? Color.white : Color.white.opacity(0.6))
+                .padding(.horizontal, 12)
+                .frame(minWidth: 60, minHeight: 44)
+                .background(Color(red: 0.08, green: 0.04, blue: 0.15), in: RoundedRectangle(cornerRadius: 6))
+                .overlay(RoundedRectangle(cornerRadius: 6).stroke(accent.opacity(isEnabled ? 0.95 : 0.4), lineWidth: 1.5))
+                .shadow(color: accent.opacity(isEnabled ? (configuration.isPressed ? 0.7 : 0.35) : 0), radius: configuration.isPressed ? 7 : 3)
+                .opacity(isEnabled ? 1 : 0.65)
+                .scaleEffect(configuration.isPressed ? 0.96 : 1)
+        } else {
+            configuration.label
+                .opacity(configuration.isPressed ? 0.6 : 1)
+        }
+    }
+}
+
 struct PlateEmblem: View {
     let color: Color
 
@@ -21,11 +108,15 @@ struct PlateEmblem: View {
 struct ArcadeControlStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
     let isIncrease: Bool
+    @Environment(\.handheldControls) private var handheldControls
 
-    func makeBody(configuration: Configuration) -> some View {
+    @ViewBuilder func makeBody(configuration: Configuration) -> some View {
         let color = isIncrease ? Color(red: 0.91, green: 0.08, blue: 0.12) : Color(red: 0.08, green: 0.72, blue: 0.16)
         let pressed = configuration.isPressed
-        return configuration.label
+        if handheldControls {
+            PlasticButtonStyle(color: isIncrease ? Color(red: 1, green: 0.46, blue: 0.52) : Color(red: 0.46, green: 0.86, blue: 0.73), circular: true).makeBody(configuration: configuration)
+        } else {
+        configuration.label
             .foregroundStyle(.white.opacity(isEnabled ? 1 : 0.45))
             .offset(y: pressed ? 1.5 : 0)
             .background {
@@ -39,6 +130,7 @@ struct ArcadeControlStyle: ButtonStyle {
                 .offset(y: pressed ? 1.5 : 0)
             }
             .opacity(isEnabled ? 1 : 0.5)
+        }
     }
 }
 
@@ -84,7 +176,14 @@ struct ControllerButtonStyle: ButtonStyle {
 }
 
 struct ConsoleHeaderButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
+    @Environment(\.handheldControls) private var handheldControls
+
+    @ViewBuilder func makeBody(configuration: Configuration) -> some View {
+        if handheldControls {
+            PlasticButtonStyle(padded: true).makeBody(configuration: configuration)
+                .font(.custom("ZCOOLQingKeHuangYou-Regular", size: 14))
+                .frame(minHeight: 44)
+        } else {
         configuration.label
             .font(.custom("ZCOOLQingKeHuangYou-Regular", size: 15))
             .lineLimit(1).minimumScaleFactor(0.65)
@@ -101,12 +200,27 @@ struct ConsoleHeaderButtonStyle: ButtonStyle {
             )
             .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color(red: 0.72, green: 0.28, blue: 0.88), lineWidth: 1))
             .shadow(color: .purple.opacity(configuration.isPressed ? 0.7 : 0.35), radius: configuration.isPressed ? 6 : 3)
+        }
     }
 }
 
 struct RealisticPlateView: View {
     let color: Color
     let showFace: Bool
+
+    private var isDarkPlate: Bool {
+        var white: CGFloat = 0
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        let uiColor = UIColor(color)
+        if uiColor.getWhite(&white, alpha: &alpha) { return white < 0.16 }
+        if uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
+            return max(red, green, blue) < 0.16
+        }
+        return false
+    }
 
     var body: some View {
         GeometryReader { geometry in
@@ -118,10 +232,11 @@ struct RealisticPlateView: View {
                         color.opacity(0.85).blendMode(.color)
                     }
                     .compositingGroup()
-                    .brightness(0.16)
+                    .brightness(isDarkPlate ? -0.20 : 0.16)
                     .mask(plateImage)
                 if showFace {
                     plateImage
+                        .brightness(isDarkPlate ? -0.20 : 0)
                         .mask {
                             Ellipse()
                                 .frame(width: width * 0.055, height: height * 0.20)

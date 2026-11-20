@@ -226,3 +226,117 @@ struct WeightStepControls: View {
         }
     }
 }
+
+
+// 外屏配重统一使用草稿，只有确认后才更新训练中的配重。
+struct HandheldWeightSettings: View {
+    var confirmRequest: Int = 0
+    var onClose: () -> Void
+    @EnvironmentObject private var store: TrainingStore
+    @Environment(\.trainingLandscape) private var trainingLandscape
+    @Environment(\.dismiss) private var dismiss
+    @State private var mode = 0
+    @State private var manualSelection: [UUID: Int] = [:]
+    @State private var automaticSelection: [UUID: Int]?
+    @State private var confirmMessage: String?
+
+    private var screenPanel: Color {
+        trainingLandscape ? Color(red: 0.20, green: 0.09, blue: 0.29) : Color(red: 0.08, green: 0.12, blue: 0.12)
+    }
+
+    private var screenBackground: Color {
+        trainingLandscape ? Color(red: 0.10, green: 0.03, blue: 0.17) : Color(red: 0.025, green: 0.04, blue: 0.05)
+    }
+
+    private var selected: [UUID: Int]? {
+        mode == 0 ? automaticSelection : manualSelection
+    }
+
+    private var selectedTotal: Double {
+        store.barWeight + store.plates.reduce(0) { total, plate in
+            total + plate.kilograms * Double((selected ?? [:])[plate.id, default: 0]) * 2
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Button("取消", action: onClose)
+                Spacer()
+                Text("配重设置").font(.system(size: 15, weight: .bold, design: .monospaced)).tracking(1)
+                Spacer()
+                if !trainingLandscape {
+                    Button("确认") { applySelection() }
+                        .buttonStyle(TrainingModalButtonStyle(confirm: true))
+                }
+            }
+            .buttonStyle(TrainingModalButtonStyle())
+            .padding(.horizontal, 8)
+            .background(screenBackground)
+            .layoutPriority(1)
+            List {
+                Section {
+                    Picker("配重方式", selection: $mode) {
+                        Text("自动计算").tag(0)
+                        Text("手动选片").tag(1)
+                    }
+                    .pickerStyle(.segmented)
+                }
+                .listRowBackground(screenPanel.opacity(0.96))
+                if mode == 0 {
+                    WeightCalculatorSection(pendingSelection: $automaticSelection)
+                        .listRowBackground(screenPanel.opacity(0.96))
+                } else {
+                    Section {
+                        if store.plates.isEmpty {
+                            Text("还没有杠铃片规格，请在完整功能中添加。")
+                                .foregroundStyle(.secondary)
+                        }
+                        ForEach(store.plates.sorted { $0.kilograms > $1.kilograms }) { plate in
+                            Stepper(value: Binding(
+                                get: { manualSelection[plate.id, default: 0] },
+                                set: { manualSelection[plate.id] = $0 }
+                            ), in: 0...max(0, plate.availablePairs ?? 1)) {
+                                HStack {
+                                    Text(plate.label)
+                                    Spacer()
+                                    Text("\(manualSelection[plate.id, default: 0]) 对")
+                                        .monospacedDigit().foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                    } header: {
+                        Text("每侧相同数量")
+                    } footer: {
+                        Text("可选数量以已配置的杠铃片库存为准。")
+                    }
+                    .listRowBackground(screenPanel.opacity(0.96))
+                }
+            }
+            .scrollContentBackground(.hidden)
+            if let confirmMessage = confirmMessage {
+                Text(confirmMessage).font(.caption).foregroundStyle(.orange).padding(6)
+            }
+            if selected != nil {
+                Text("总重量 \(selectedTotal.formattedWeight) kg")
+                    .font(.subheadline.weight(.semibold))
+                    .padding(6)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(screenBackground)
+        .environment(\.colorScheme, .dark)
+        .onAppear { manualSelection = store.selected }
+        .onChange(of: confirmRequest) { _ in applySelection() }
+    }
+
+    private func applySelection() {
+        guard let selection = selected else {
+            confirmMessage = "请先计算配重或选择手动选片。"
+            return
+        }
+        store.selected = selection
+        TrainingFeedback.confirm()
+        onClose()
+    }
+}

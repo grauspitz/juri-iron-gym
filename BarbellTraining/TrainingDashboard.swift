@@ -5,6 +5,9 @@ struct TrainingDashboard: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.trainingModeUI) private var trainingModeUI
+    @Environment(\.trainingLandscape) private var trainingLandscape
+    @Environment(\.arcadeMenuFocus) private var arcadeMenuFocus
     @Binding var calendarDate: Date
     @Binding var trainingModeAnchor: CGRect?
     @State private var calendarVisible = false
@@ -128,7 +131,9 @@ struct TrainingDashboard: View {
             compactPage { calendarCard }.background(TrainingBackground()).tabItem { Label("日历", systemImage: "calendar") }.tag(2)
             overviewContent.tabItem { Label("概览", systemImage: "chart.bar.fill") }.tag(3)
             toolsContent.tabItem { Label("工具", systemImage: "slider.horizontal.3") }.tag(4)
-            Color.clear.tabItem { trainingModeLabel }.tag(5)
+            Color.clear
+                .onAppear { enterTrainingMode() }
+                .tabItem { trainingModeLabel }.tag(5)
         }
         .background(TrainingModeTabProbe(anchor: $trainingModeAnchor))
         .tint(TrainingTheme.teal)
@@ -291,7 +296,9 @@ struct TrainingDashboard: View {
                             plateIncrease(plate)
                         }
                         .padding(.horizontal, 4).frame(minHeight: 60)
-                        .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
+                        .background(trainingModeUI ? Color(red: 0.27, green: 0.12, blue: 0.36).opacity(0.82) : Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(trainingModeUI ? Color.purple.opacity(store.selected[plate.id, default: 0] > 0 ? 0.95 : 0.4) : .clear, lineWidth: store.selected[plate.id, default: 0] > 0 ? 2 : 1))
+        .shadow(color: trainingModeUI && store.selected[plate.id, default: 0] > 0 ? Color.purple.opacity(0.5) : .clear, radius: 5)
                     }
                 }
             }
@@ -357,9 +364,10 @@ struct TrainingDashboard: View {
 
     private func dashboardContent() -> some View {
         GeometryReader { geometry in
+            ScrollViewReader { proxy in
             ScrollView {
                 VStack(spacing: 14) {
-                    if let fold = verticalFold(in: geometry) {
+                    if let fold = verticalFold(in: geometry), !trainingModeUI || trainingLandscape {
                         // 折叠屏双栏必须以系统提供的折痕为界；不要用等宽或最大内容宽度重新居中。
                         HStack(alignment: .top, spacing: 0) {
                             VStack(spacing: 14) {
@@ -373,19 +381,19 @@ struct TrainingDashboard: View {
                                 .frame(width: max(0, geometry.size.width - fold.maxX - 16))
                         }
                         .padding(.horizontal, 16)
-                    } else if geometry.size.width >= 560 && horizontalSizeClass == .regular {
+                    } else if geometry.size.width >= 560 && horizontalSizeClass == .regular && (!trainingModeUI || trainingLandscape) {
                         HStack(alignment: .top, spacing: 14) {
                             VStack(spacing: 14) {
                                 weightCard
-                                platesCard(grid: (geometry.size.width - 46) / 2 >= 260 && !dynamicTypeSize.isAccessibilitySize,
-                                           gridItemHeight: min(105, max(72, geometry.size.height * 0.12)))
+                                expandedPlanCard
+                                recordCard
                                 calendarCard
                                 overviewCard
                             }
                                 .frame(maxWidth: .infinity)
                             VStack(spacing: 14) {
-                                expandedPlanCard
-                                recordCard
+                                platesCard(grid: (geometry.size.width - 46) / 2 >= 260 && !dynamicTypeSize.isAccessibilitySize,
+                                           gridItemHeight: min(105, max(72, geometry.size.height * 0.12)))
                                 restCard
                                 toolsButton
                             }
@@ -409,7 +417,14 @@ struct TrainingDashboard: View {
                 .frame(maxWidth: verticalFold(in: geometry) == nil ? 1100 : .infinity)
                 .frame(maxWidth: .infinity)
             }
+            .onChange(of: arcadeMenuFocus) { focus in
+                if focus >= 0 {
+                    withAnimation { proxy.scrollTo("arcade-focus-\(focus)", anchor: .center) }
+                }
+            }
+            }
         }
+        .background(trainingModeUI && !trainingLandscape ? Color(red: 0.025, green: 0.04, blue: 0.05) : .clear)
     }
 
     private func verticalFold(in geometry: GeometryProxy) -> CGRect? {
@@ -444,16 +459,17 @@ struct TrainingDashboard: View {
         VStack(alignment: .leading, spacing: 8) {
             Label("当前总重量", systemImage: "scalemass").font(.subheadline).foregroundStyle(.secondary)
             HStack(alignment: .firstTextBaseline, spacing: 5) {
-                Text(store.total.formattedWeight).font(.system(size: 45, weight: .bold, design: .rounded)).monospacedDigit()
+                Text(store.total.formattedWeight).font(trainingModeUI ? .custom("Orbitron-Regular", size: 45).weight(.black) : .system(size: 45, weight: .bold, design: .rounded)).monospacedDigit()
                 Text("kg").font(.headline)
                 Spacer()
                 Button(action: showCalculator) { Label("自动配重", systemImage: "equal.circle") }
                     .font(.subheadline).foregroundStyle(TrainingTheme.accent)
-            }.foregroundStyle(TrainingTheme.teal)
+            }.foregroundStyle(trainingModeUI ? Color(red: 1, green: 0.64, blue: 0.85) : TrainingTheme.teal)
             BarbellView(plates: store.plates, selected: store.selected).frame(height: 68)
             Text("杆重 \(store.barWeight.formattedWeight) kg · 两侧对称")
                 .font(.caption).foregroundStyle(.secondary)
         }.trainingCard()
+            .arcadeFocus(arcadeMenuFocus == 0, cornerRadius: 16).id("arcade-focus-0")
     }
 
     private func platesCard(grid: Bool, gridItemHeight: CGFloat = 0) -> some View {
@@ -483,6 +499,7 @@ struct TrainingDashboard: View {
                 }
             }
         }.trainingCard()
+            .arcadeFocus(arcadeMenuFocus == 1, cornerRadius: 16).id("arcade-focus-1")
     }
 
     private func plateRow(_ plate: Plate) -> some View {
@@ -498,7 +515,7 @@ struct TrainingDashboard: View {
     private func plateGridItem(_ plate: Plate, minHeight: CGFloat) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 6) {
-                Circle().fill(Color(hex: plate.colorHex)).frame(width: 10, height: 10)
+                PlateEmblem(color: Color(hex: plate.colorHex)).frame(width: 32, height: 32).scaleEffect(0.7)
                 Text(plate.label).font(.subheadline.weight(.semibold)).lineLimit(1).minimumScaleFactor(0.7)
             }
             HStack(spacing: 0) {
@@ -563,7 +580,8 @@ struct TrainingDashboard: View {
                 TimelineView(.periodic(from: .now, by: 1)) { context in
                     if let seconds = pausedSeconds ?? deadline.map({ max(0, Int(ceil($0.timeIntervalSince(context.date)))) }) {
                         Text(seconds == 0 ? "休息结束" : String(format: "%02d:%02d", seconds / 60, seconds % 60))
-                            .monospacedDigit().foregroundStyle(TrainingTheme.teal)
+                            .font(trainingModeUI && seconds != 0 ? .custom("Orbitron-Regular", size: 18).weight(.bold) : .body)
+                            .monospacedDigit().foregroundStyle(trainingModeUI ? Color(red: 0.68, green: 1, blue: 0.25) : TrainingTheme.teal)
                     } else { Text("记录后自动开始").font(.caption).foregroundStyle(.secondary) }
                 }
             }
@@ -614,13 +632,28 @@ struct TrainingDashboard: View {
         Button(action: showTools) {
             Label("工具与设置", systemImage: "slider.horizontal.3").frame(maxWidth: .infinity)
         }.buttonStyle(TrainingActionStyle(kind: .secondary))
+            .arcadeFocus(arcadeMenuFocus == 2).id("arcade-focus-2")
     }
 }
 
 private extension View {
-    func trainingCard() -> some View {
-        self.padding(16).frame(maxWidth: .infinity, alignment: .leading)
-            .background(TrainingTheme.card, in: RoundedRectangle(cornerRadius: 20))
+    func arcadeFocus(_ selected: Bool, cornerRadius: CGFloat = 7) -> some View {
+        self.overlay(RoundedRectangle(cornerRadius: cornerRadius).stroke(selected ? Color.cyan : .clear, lineWidth: 2))
+            .shadow(color: selected ? Color.cyan.opacity(0.7) : .clear, radius: 6)
+    }
+
+    func trainingCard() -> some View { modifier(TrainingCardStyle()) }
+}
+
+private struct TrainingCardStyle: ViewModifier {
+    @Environment(\.trainingModeUI) private var trainingModeUI
+    @Environment(\.trainingLandscape) private var trainingLandscape
+
+    func body(content: Content) -> some View {
+        let lcd = trainingModeUI && !trainingLandscape
+        return content.padding(16).frame(maxWidth: .infinity, alignment: .leading)
+            .background(lcd ? Color(red: 0.055, green: 0.08, blue: 0.09) : (trainingModeUI ? Color(red: 0.12, green: 0.04, blue: 0.20).opacity(0.90) : TrainingTheme.card), in: RoundedRectangle(cornerRadius: lcd ? 4 : 16))
+            .overlay(RoundedRectangle(cornerRadius: lcd ? 4 : 16).stroke(lcd ? Color(red: 0.36, green: 0.53, blue: 0.48).opacity(0.8) : (trainingModeUI ? Color.purple.opacity(0.65) : .clear), lineWidth: 1))
     }
 }
 
