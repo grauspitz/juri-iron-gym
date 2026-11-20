@@ -4,12 +4,19 @@ import AVFoundation
 
 enum TrainingSound {
     private static var players: [String: AVAudioPlayer] = [:]
+    private static let audioQueue = DispatchQueue(label: "com.barbelltraining.sound", qos: .userInitiated)
 
     static func tap() { play("tap", fallback: 1104) }
     static func confirm() { play("confirm", fallback: 1103) }
     static func adjust() { play("adjust", fallback: 1105) }
 
     private static func play(_ name: String, fallback: SystemSoundID) {
+        audioQueue.async {
+            playOnAudioQueue(name, fallback: fallback)
+        }
+    }
+
+    private static func playOnAudioQueue(_ name: String, fallback: SystemSoundID) {
         do {
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(.ambient, mode: .default, options: [.mixWithOthers])

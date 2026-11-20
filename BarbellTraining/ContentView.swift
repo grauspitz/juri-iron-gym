@@ -83,7 +83,7 @@ struct ContentView: View {
                         dashboard.transition(.opacity)
                     }
                 }
-                .animation(reduceMotion ? nil : .easeInOut(duration: 0.12), value: isTrainingMode)
+                .animation(reduceMotion || isTrainingMode ? nil : .easeInOut(duration: 0.12), value: isTrainingMode)
                 }
                 .onAppear {
                     isTrainingLandscape = geometry.size.width > geometry.size.height
@@ -235,8 +235,14 @@ struct ContentView: View {
     }
 
     func enterTrainingMode() {
+        print("{\"training_start_event\":\"tap\",\"timestamp_ms\":\(Int(Date().timeIntervalSince1970 * 1000))}")
         TrainingFeedback.tap()
+        print("{\"training_start_event\":\"feedback_finished\",\"timestamp_ms\":\(Int(Date().timeIntervalSince1970 * 1000))}")
         beginTrainingMode(manual: true)
+        print("{\"training_start_event\":\"mode_requested\",\"timestamp_ms\":\(Int(Date().timeIntervalSince1970 * 1000))}")
+        DispatchQueue.main.async {
+            print("{\"training_start_event\":\"main_queue_resumed\",\"timestamp_ms\":\(Int(Date().timeIntervalSince1970 * 1000))}")
+        }
     }
 
     func beginTrainingMode(manual: Bool) {

@@ -42,9 +42,20 @@ struct PlasticButtonStyle: ButtonStyle {
     var color: Color = Color(red: 0.88, green: 0.90, blue: 0.91)
     var circular = false
     var padded = false
-    @Environment(\.isEnabled) private var isEnabled
 
     func makeBody(configuration: Configuration) -> some View {
+        PlasticButtonFace(configuration: configuration, color: color, circular: circular, padded: padded)
+    }
+}
+
+private struct PlasticButtonFace: View {
+    let configuration: ButtonStyleConfiguration
+    let color: Color
+    let circular: Bool
+    let padded: Bool
+    @Environment(\.isEnabled) private var isEnabled
+
+    var body: some View {
         let shape = RoundedRectangle(cornerRadius: circular ? 100 : 10)
         return configuration.label
             .padding(.horizontal, padded ? 12 : 0)

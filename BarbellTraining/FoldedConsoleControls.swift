@@ -46,8 +46,8 @@ extension FoldedTrainingView {
                     .frame(maxWidth: .infinity)
                 }
                 .frame(height: buttonSize)
-                .saturation(shutdownStage >= 3 ? 0 : 1)
-                .brightness(shutdownStage >= 3 ? -0.32 : 0)
+                .saturation(shutdownStage >= 3 ? 0.85 : 1)
+                .brightness(shutdownStage >= 3 ? -0.06 : 0)
                 .animation(.easeOut(duration: 0.18), value: shutdownStage >= 3)
             }
             .padding(8)
@@ -56,6 +56,9 @@ extension FoldedTrainingView {
             .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
             .onPreferenceChange(ControlContentHeightKey.self) { controlContentHeight = $0 }
             .disabled(showCustomActionEditor)
+        }
+        .onAppear {
+            print("{\"training_start_event\":\"portrait_controls_appeared\",\"timestamp_ms\":\(Int(Date().timeIntervalSince1970 * 1000))}")
         }
 
     }
@@ -157,8 +160,8 @@ extension FoldedTrainingView {
             }.metalPanel()
             HStack(spacing: 8) {
                 totalWeight
-                    .saturation(shutdownStage >= 2 ? 0 : 1)
-                    .brightness(shutdownStage >= 2 ? -0.32 : 0)
+                    .saturation(shutdownStage >= 2 ? 0.85 : 1)
+                    .brightness(shutdownStage >= 2 ? -0.06 : 0)
                     .animation(.easeOut(duration: 0.18), value: shutdownStage >= 2)
                 ActionProgressView(action: note, compact: true)
                     .foregroundStyle(.white.opacity(0.75))
@@ -258,8 +261,8 @@ extension FoldedTrainingView {
             Button("3 分钟") { TrainingFeedback.tap(); duration = 180 }
         } label: {
             LCDDisplay(value: String(format: "%02d:%02d", duration / 60, duration % 60), unit: "REST")
-                .saturation(shutdownStage >= 1 ? 0 : 1)
-                .brightness(shutdownStage >= 1 ? -0.32 : 0)
+                .saturation(shutdownStage >= 1 ? 0.85 : 1)
+                .brightness(shutdownStage >= 1 ? -0.06 : 0)
                 .animation(.easeOut(duration: 0.18), value: shutdownStage >= 1)
         }
         .accessibilityLabel("休息时长，\(duration) 秒")

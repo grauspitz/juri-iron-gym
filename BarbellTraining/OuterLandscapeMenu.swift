@@ -58,6 +58,10 @@ struct OuterLandscapeMenu: View {
         return Button {
             guard transition == nil else { return }
             TrainingSound.tap()
+            if item == .training {
+                destination = item
+                return
+            }
             withAnimation(.easeOut(duration: 0.16)) { highlighted = item }
             transition = Task { @MainActor in
                 do { try await Task.sleep(nanoseconds: 350_000_000) } catch { return }

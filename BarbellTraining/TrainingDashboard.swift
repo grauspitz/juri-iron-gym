@@ -123,20 +123,62 @@ struct TrainingDashboard: View {
     }
 
     private var compactTabs: some View {
-        TabView(selection: Binding(get: { selectedCompactTab }, set: { tab in
-            if tab == 5 { enterTrainingMode() } else { selectedCompactTab = tab }
-        })) {
-            dashboardContent().background(TrainingBackground()).tabItem { Label("首页", systemImage: "house") }.tag(0)
-            compactPage { expandedPlanCard; recordCard; restCard }.background(TrainingBackground()).tabItem { Label("训练", systemImage: "figure.strengthtraining.traditional") }.tag(1)
-            compactPage { calendarCard }.background(TrainingBackground()).tabItem { Label("日历", systemImage: "calendar") }.tag(2)
-            overviewContent.tabItem { Label("概览", systemImage: "chart.bar.fill") }.tag(3)
-            toolsContent.tabItem { Label("工具", systemImage: "slider.horizontal.3") }.tag(4)
-            Color.clear
-                .onAppear { enterTrainingMode() }
-                .tabItem { trainingModeLabel }.tag(5)
+        HStack(spacing: 0) {
+            compactTabContent.frame(maxWidth: .infinity, maxHeight: .infinity)
+            compactDock(vertical: true)
+                .frame(maxHeight: .infinity, alignment: .bottom)
+                .padding(.bottom, 6)
         }
-        .background(TrainingModeTabProbe(anchor: $trainingModeAnchor))
-        .tint(TrainingTheme.teal)
+        .ignoresSafeArea(.container, edges: .trailing)
+    }
+
+    @ViewBuilder private var compactTabContent: some View {
+        switch selectedCompactTab {
+        case 1: compactPage { expandedPlanCard; recordCard; restCard }.background(TrainingBackground())
+        case 2: compactPage { calendarCard }.background(TrainingBackground())
+        case 3: overviewContent
+        case 4: toolsContent
+        default: dashboardContent().background(TrainingBackground())
+        }
+    }
+
+    private func compactDock(vertical: Bool) -> some View {
+        let items: [(String, String)] = [
+            ("首页", "house"), ("训练", "figure.strengthtraining.traditional"),
+            ("日历", "calendar"), ("概览", "chart.bar.fill"),
+            ("工具", "slider.horizontal.3"), ("训练模式", "")
+        ]
+        let layout = vertical ? AnyLayout(VStackLayout(spacing: 2)) : AnyLayout(HStackLayout(spacing: 0))
+        return layout {
+            ForEach(items.indices, id: \.self) { index in
+                Button {
+                    if index == 5 { enterTrainingMode() }
+                    else { selectedCompactTab = index }
+                } label: {
+                    Group {
+                        if index == 5 {
+                            Image("TrainingModeAvatar").resizable().scaledToFit().frame(width: 28, height: 28)
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                        } else {
+                            Image(systemName: items[index].1).font(.system(size: 21, weight: .semibold))
+                        }
+                    }
+                    .foregroundStyle(selectedCompactTab == index ? TrainingTheme.teal : Color.primary)
+                    .frame(maxWidth: vertical ? nil : .infinity)
+                    .frame(width: vertical ? 52 : nil, height: 48)
+                    .background(selectedCompactTab == index ? Color.primary.opacity(0.09) : .clear, in: RoundedRectangle(cornerRadius: 14))
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(items[index].0)
+                .accessibilityAddTraits(selectedCompactTab == index ? .isSelected : [])
+            }
+        }
+        .padding(5)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 24))
+        .overlay(RoundedRectangle(cornerRadius: 24).stroke(Color.primary.opacity(0.12), lineWidth: 1))
+        .padding(vertical ? .trailing : .bottom, 6)
+        .padding(vertical ? .leading : .horizontal, 6)
     }
 
     // iPhone Duo 内屏优先：保留系统 Dock，使用 size class 与可用空间适配。

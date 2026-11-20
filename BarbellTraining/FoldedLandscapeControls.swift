@@ -30,7 +30,7 @@ extension FoldedTrainingView {
                         .frame(width: screen.size.width, height: screen.size.height)
                         .clipped()
                 }
-            } else {
+            } else if scenePrepared {
                 display
             }
             if showCustomActionEditor { customActionEditor }
@@ -45,13 +45,14 @@ extension FoldedTrainingView {
             }
             if !reduceMotion && isExiting {
                 TrainingShutdownScreen(started: shutdownStarted).allowsHitTesting(false)
-            } else if !reduceMotion && bootVisible {
+            } else if !reduceMotion && bootVisible && bootSequenceStarted {
                 TrainingBootScreen(started: bootStarted, duration: fullStartup ? 4.5 : 1.2, isShutdown: false)
                     .allowsHitTesting(false)
             }
         }
         .opacity(reduceMotion || screenPowered ? 1 : 0)
         .clipped()
+        .allowsHitTesting(hudVisible && !bootVisible && !isExiting)
     }
 
     func switchGrip(isLeft: Bool) -> some View {
@@ -108,7 +109,12 @@ extension FoldedTrainingView {
             .frame(width: geometry.size.width, height: geometry.size.height)
             .background { gripMaterial(isLeft: isLeft) }
         }
-        .opacity(controlsVisible && !isExiting ? 1 : 0)
+        .onAppear {
+            print("{\"training_start_event\":\"landscape_grip_appeared\",\"side\":\"\(isLeft ? "left" : "right")\",\"timestamp_ms\":\(Int(Date().timeIntervalSince1970 * 1000))}")
+        }
+        .opacity(controlsVisible ? 1 : 0)
+        .overlay { Color.black.opacity(shutdownStage >= 4 ? 0.12 : 0).allowsHitTesting(false) }
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.8), value: shutdownStage >= 4)
     }
 
     func controllerKey(_ title: String, label: String, size: CGFloat, action: @escaping () -> Void) -> some View {

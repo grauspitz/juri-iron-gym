@@ -32,11 +32,13 @@ struct FoldedTrainingView: View {
     @Environment(\.scenePhase) var scenePhase
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @State var sceneVisible = false
+    @State var scenePrepared = false
     @State var hudVisible = false
-    @State var controlsVisible = false
+    @State var controlsVisible = true
     @State var energyVisible = false
     @State var screenPowered = false
     @State var bootVisible = true
+    @State var bootSequenceStarted = false
     @State var bootStarted = Date()
     @State var shutdownStarted = Date()
     @State var shutdownStage = 0
@@ -90,8 +92,10 @@ struct FoldedTrainingView: View {
                             .frame(width: screen.size.width, height: screen.size.height)
                             .clipped()
                     }
-                } else {
+                } else if scenePrepared {
                     display
+                } else {
+                    Color.black
                 }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -112,7 +116,7 @@ struct FoldedTrainingView: View {
                     .shadow(color: .purple, radius: 12)
                     .shadow(color: .pink, radius: 22)
                     .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
-                    .opacity(reduceMotion ? 0 : (isExiting ? 1 : (hudVisible ? 0 : 1)))
+                    .opacity(reduceMotion ? 0 : (isExiting ? 1 : (energyVisible && !hudVisible ? 1 : 0)))
                     .animation(reduceMotion ? nil : .easeInOut(duration: isExiting ? 0.6 : 0.35), value: energyVisible && !isExiting)
                     .animation(reduceMotion ? nil : .easeOut(duration: 0.25), value: hudVisible)
             }.allowsHitTesting(false)
@@ -121,13 +125,14 @@ struct FoldedTrainingView: View {
                     if !reduceMotion && isExiting {
                         TrainingShutdownScreen(started: shutdownStarted)
                             .allowsHitTesting(false)
-                    } else if !reduceMotion && bootVisible {
+                    } else if !reduceMotion && bootVisible && bootSequenceStarted {
                         TrainingBootScreen(started: bootStarted, duration: fullStartup ? 4.5 : 1.2, isShutdown: false)
                             .transition(.opacity)
                             .allowsHitTesting(false)
                     }
                 }
                 .clipped()
+                .allowsHitTesting(hudVisible && !bootVisible && !isExiting)
             FoldHinge().frame(height: max(0, fold.height))
                 .accessibilityHidden(true)
             controls
@@ -136,7 +141,7 @@ struct FoldedTrainingView: View {
                 .background {
                     ControllerPanelBackground(isHandheld: true)
                 }
-                .overlay { Color.black.opacity(shutdownStage >= 4 ? 0.94 : 0).allowsHitTesting(false) }
+                .overlay { Color.black.opacity(shutdownStage >= 4 ? 0.12 : 0).allowsHitTesting(false) }
                 .animation(reduceMotion ? nil : .easeInOut(duration: 0.8), value: shutdownStage >= 4)
                 .opacity(controlsVisible ? 1 : 0)
                 .offset(y: controlsVisible ? 0 : 20)
@@ -148,15 +153,21 @@ struct FoldedTrainingView: View {
             TimelineView(.periodic(from: .now, by: 1)) { context in
                 GeometryReader { geometry in
                     VStack(spacing: 0) {
-                        Image(isLandscape ? "ArcadePanelMaterial" : FoldedTrainingDisplay.backgroundImageName(note: note, isResting: (remaining(at: context.date) ?? 0) > 0))
-                            .resizable().scaledToFill()
-                            .frame(width: geometry.size.width, height: max(0, fold.minY))
-                            .clipped()
-                            .opacity(sceneVisible && !isExiting ? 1 : 0)
+                        Group {
+                            if scenePrepared && !isExiting {
+                                Image(FoldedTrainingDisplay.backgroundImageName(note: note, isResting: (remaining(at: context.date) ?? 0) > 0))
+                                    .resizable().scaledToFill()
+                                    .opacity(sceneVisible ? 1 : 0)
+                            } else {
+                                Color.black
+                            }
+                        }
+                        .frame(width: geometry.size.width, height: max(0, fold.minY))
+                        .clipped()
                         Color.black.frame(height: max(0, fold.height))
                         ControllerPanelBackground(isHandheld: true)
                             .frame(height: max(0, height - fold.maxY))
-                            .opacity(controlsVisible && shutdownStage < 4 ? 1 : 0)
+                            .opacity(controlsVisible ? 1 : 0)
                     }
                     .animation(reduceMotion ? nil : .easeOut(duration: 0.3), value: sceneVisible && !isExiting)
                     .animation(reduceMotion ? nil : .easeOut(duration: 0.3), value: controlsVisible)
@@ -175,13 +186,16 @@ struct FoldedTrainingView: View {
         .environment(\.handheldControls, true)
         .environment(\.trainingModeUI, true)
         .environment(\.trainingLandscape, isLandscape)
-        .allowsHitTesting(hudVisible && !bootVisible && !isExiting)
-        .task { await startAnimation() }
+        .allowsHitTesting(!isExiting)
+        .task(id: isExiting) {
+            if !isExiting { await startAnimation() }
+        }
         .task(id: isExiting) { await updateShutdownSequence() }
         .onChange(of: isExiting) { exiting in
             if exiting { shutdownStarted = Date() }
         }
         .onAppear {
+            print("{\"training_start_event\":\"view_appeared\",\"timestamp_ms\":\(Int(Date().timeIntervalSince1970 * 1000))}")
             if note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 note = "硬拉"
             }
@@ -190,6 +204,7 @@ struct FoldedTrainingView: View {
 
     @MainActor func startAnimation() async {
         if reduceMotion {
+            scenePrepared = true
             screenPowered = true
             sceneVisible = true
             hudVisible = true
@@ -198,11 +213,15 @@ struct FoldedTrainingView: View {
             return
         }
         do {
+            try await Task.sleep(nanoseconds: 350_000_000)
             bootStarted = Date()
-            controlsVisible = true
+            bootSequenceStarted = true
             energyVisible = true
             if trainingStartupSound { TrainingSound.adjust() }
-            try await Task.sleep(nanoseconds: fullStartup ? 500_000_000 : 150_000_000)
+            try await Task.sleep(nanoseconds: 100_000_000)
+            print("{\"training_start_event\":\"load_scene\",\"timestamp_ms\":\(Int(Date().timeIntervalSince1970 * 1000))}")
+            scenePrepared = true
+            try await Task.sleep(nanoseconds: fullStartup ? 400_000_000 : 50_000_000)
             screenPowered = true
             if fullStartup {
                 try await Task.sleep(nanoseconds: 700_000_000)
@@ -211,6 +230,7 @@ struct FoldedTrainingView: View {
             } else {
                 try await Task.sleep(nanoseconds: 650_000_000)
             }
+            print("{\"training_start_event\":\"show_scene\",\"timestamp_ms\":\(Int(Date().timeIntervalSince1970 * 1000))}")
             sceneVisible = true
             hudVisible = true
             if trainingStartupSound { TrainingSound.confirm() }
