@@ -6,3 +6,6 @@ xcuserdata/
 DerivedData/
 build/
 *.xcresult
+
+# Local credentials
+BarbellTraining/Secrets.local.xcconfig

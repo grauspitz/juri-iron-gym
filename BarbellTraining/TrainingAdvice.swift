@@ -1,7 +1,10 @@
 import SwiftUI
 @MainActor
 final class TrainingAdvice: ObservableObject {
-    private let apiKey = "[REMOVED]"
+    private var apiKey: String {
+        let value = Bundle.main.object(forInfoDictionaryKey: "TrainingAdviceAPIKey") as? String ?? ""
+        return value.hasPrefix("$(") ? "" : value
+    }
     @Published var advice = UserDefaults.standard.string(forKey: "zhipuTrainingAdviceText") ?? ""
     @Published var isLoading = false
     @Published var error: String?
@@ -9,6 +12,10 @@ final class TrainingAdvice: ObservableObject {
 
     func refresh(sets: [TrainingSet], force: Bool = false) async {
         guard !isLoading else { return }
+        guard !apiKey.isEmpty else {
+            error = "未配置训练建议服务密钥。"
+            return
+        }
         if !force, let date = UserDefaults.standard.object(forKey: "zhipuTrainingAdviceDate") as? Date,
            Calendar.current.isDateInToday(date) { return }
         let cutoff = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()

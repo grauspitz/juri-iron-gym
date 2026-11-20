@@ -53,6 +53,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D0000000000000000000001C /* TrainingConfig.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = TrainingConfig.xcconfig; sourceTree = "<group>"; };
 		D0000000000000000000001A /* ContentTrainingSections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentTrainingSections.swift; sourceTree = "<group>"; };
 		D00000000000000000000018 /* ContentPages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentPages.swift; sourceTree = "<group>"; };
 		D00000000000000000000016 /* FoldedConsoleControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoldedConsoleControls.swift; sourceTree = "<group>"; };
@@ -146,6 +147,7 @@
 				A00000000000000000000031 /* ZCOOLQingKeHuangYou-Regular.ttf */,
 				A00000000000000000000032 /* Orbitron-OFL.txt */,
 				A00000000000000000000033 /* ZCOOL-OFL.txt */,
+				D0000000000000000000001C /* TrainingConfig.xcconfig */,
 				A00000000000000000000008 /* BarbellTrainingApp.swift */,
 				A00000000000000000000009 /* TrainingStore.swift */,
 				A0000000000000000000003C /* TrainingInsights.swift */,
@@ -303,6 +305,7 @@
 		};
 		A00000000000000000000014 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D0000000000000000000001C /* TrainingConfig.xcconfig */;
 			buildSettings = {
 				CURRENT_PROJECT_VERSION = 1;
                 MARKETING_VERSION = 1.0;
@@ -326,6 +329,7 @@
 		};
 		A00000000000000000000015 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D0000000000000000000001C /* TrainingConfig.xcconfig */;
 			buildSettings = {
 				CURRENT_PROJECT_VERSION = 1;
                 MARKETING_VERSION = 1.0;
